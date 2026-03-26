@@ -6,7 +6,7 @@ import type { Caller, CallSession, GuidanceType } from '../callers/callers.types
 import { SUPABASE_CLIENT } from '../supabase/supabase.module';
 import type { CoachingPlan, CoachingPlanInput, PlanStep } from './coaching.types';
 
-const COACHING_MODEL = 'claude-sonnet-4-6';
+const COACHING_MODEL = 'claude-3-5-sonnet-20241022';
 
 @Injectable()
 export class CoachingService {
@@ -108,7 +108,7 @@ Rules:
   }
 
   private parseResponse(text: string, issueCategory: string): CoachingPlanInput {
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    const jsonMatch = /\{[\s\S]*\}/.exec(text);
     if (!jsonMatch) throw new Error('No JSON object found in Anthropic response');
 
     const parsed = JSON.parse(jsonMatch[0]) as CoachingPlanInput;
@@ -215,13 +215,12 @@ Rules:
 
   // ─── SMS formatting ──────────────────────────────────────────────────────────
 
-  buildFollowUpSms(plan: CoachingPlan, callerName: string | null): string {
-    const name = callerName ?? 'Friend';
+  buildFollowUpSms(plan: CoachingPlan, callerName: string | null = null): string {
     const firstStep = plan.steps[0];
     const lines = [
       'UtalkWe Listen',
       '',
-      `${name}, here's your plan:`,
+      `${callerName ?? 'Friend'}, here's your plan:`,
       `"${plan.wisdom_anchor ?? 'You are stronger than you know.'}"`,
       '',
       `Day 1: ${firstStep?.action ?? 'Take one small step forward today.'}`,

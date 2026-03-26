@@ -146,7 +146,7 @@ export class VapiService {
         firstMessage,
         model: {
           provider: 'anthropic',
-          model: 'claude-sonnet-4-5-20251001',
+          model: 'claude-3-5-sonnet-20241022',
           messages: [{ role: 'system', content: this.buildSystemPrompt(ctx) }],
           tools: this.getDefaultTools(),
         },
@@ -177,7 +177,7 @@ export class VapiService {
         firstMessage,
         model: {
           provider: 'anthropic',
-          model: 'claude-sonnet-4-5-20251001',
+          model: 'claude-3-5-sonnet-20241022',
           // Minimal system prompt — Haven should not engage further after the limit message
           messages: [
             {
@@ -584,7 +584,7 @@ export class VapiService {
         firstMessage: `Welcome to UtalkWe Listen. ${HAVEN_AI_DISCLOSURE} What's been on your mind?`,
         model: {
           provider: 'anthropic',
-          model: 'claude-sonnet-4-5-20251001',
+          model: 'claude-3-5-sonnet-20241022',
           messages: [{ role: 'system', content: HAVEN_BASE_PERSONA }],
           tools: this.getDefaultTools(),
         },
