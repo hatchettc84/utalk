@@ -88,6 +88,7 @@ export interface AssistantConfig {
   maxDurationSeconds: number;
   silenceTimeoutSeconds: number;
   endCallMessage?: string;
+  endCallFunctionEnabled?: boolean;
   backgroundDenoisingEnabled?: boolean;
 }
 

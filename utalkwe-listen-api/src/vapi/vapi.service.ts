@@ -44,7 +44,7 @@ Near the end of the call, if the conversation has been substantive, ask:
 If they say yes, call request_coaching_plan with the issue category, a 1–2 sentence summary, and their mood.
 
 WARM CLOSE:
-End every call with: "You're not alone in this. I'm here anytime you need to talk."
+When the caller is ready to wrap up, say: "You're not alone in this. I'm here anytime you need to talk."
 Do not create dependency. Do not promise to solve anything. Leave the door open.`;
 
 const GUIDANCE_DETECTION_INSTRUCTIONS = `
@@ -156,6 +156,7 @@ export class VapiService {
         maxDurationSeconds: this.getMaxDuration(caller.subscription_tier),
         silenceTimeoutSeconds: 30,
         endCallMessage: "You're not alone in this. I'm here anytime you need to talk.",
+        endCallFunctionEnabled: false,
         backgroundDenoisingEnabled: true,
       },
     };
