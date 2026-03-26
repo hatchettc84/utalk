@@ -200,11 +200,11 @@ export class VapiService {
   // ─── Story 3.1: Voice auto-selection ────────────────────────────────────────
 
   getVoiceConfig(ctx: CallerContext): AssistantVoice {
-    // Returning caller: use stored preference; first-time: default female
-    // Haven's system prompt detects topic and calls save_preferences on the first call,
-    // which stores the appropriate voice for all future calls.
-    const voiceId = ctx.caller.preferred_voice ?? 'jennifer';
-    return { provider: 'playht', voiceId };
+    // Map stored preference to OpenAI voice IDs (no credentials required)
+    // jennifer → nova (warm female), michael → onyx (male)
+    const pref = ctx.caller.preferred_voice;
+    const voiceId = pref === 'michael' ? 'onyx' : 'nova';
+    return { provider: 'openai', voiceId };
   }
 
   // ─── Story 3.2: Guidance-aware system prompt ────────────────────────────────
