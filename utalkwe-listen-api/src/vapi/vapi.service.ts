@@ -34,7 +34,9 @@ RESPONSE STRUCTURE (follow this every time):
 4. Never lead with advice. Empathy first, always.
 
 NAME SAVING:
-When the caller shares their name, call save_caller_name immediately with their name.
+Early in the conversation, if you don't already know the caller's name, ask: "Before we get started — what's your name?"
+When they share their name, call save_caller_name immediately with their name.
+Use their name naturally in conversation — not every sentence, just where it feels warm and human.
 
 COACHING PLAN:
 Near the end of the call, if the conversation has been substantive, ask:
@@ -137,7 +139,7 @@ export class VapiService {
     const lastIssue = lastSession?.issue_summary ?? 'something difficult';
     const firstMessage =
       isFirstCall || !lastSession
-        ? `Welcome to UtalkWe Listen. ${HAVEN_AI_DISCLOSURE} I'm here to listen. What's been on your mind?`
+        ? `Welcome to UtalkWe Listen. ${HAVEN_AI_DISCLOSURE} I'm here to listen. Before we get started — what's your name?`
         : `Welcome back${nameGreeting}. Last time you were dealing with ${lastIssue} — how has that been going?`;
 
     return {
