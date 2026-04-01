@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
-  Phone, CheckCircle, Star, ChevronDown, ChevronUp,
+  Phone, CheckCircle, Star, ChevronDown,
   Heart, Shield, Clock, Mic, Sparkles, BookOpen,
   ArrowRight, Menu, X, Quote
 } from 'lucide-react'
@@ -20,9 +20,9 @@ const CONFIG = {
 // ─────────────────────────────────────────
 // WAVEFORM
 // ─────────────────────────────────────────
-function Waveform({ bars = 20, className = '' }: { bars?: number; className?: string }) {
+function Waveform({ bars = 20, className = '', style }: { bars?: number; className?: string; style?: React.CSSProperties }) {
   return (
-    <div className={`flex items-end gap-[4px] ${className}`}>
+    <div className={`flex items-end gap-[4px] ${className}`} style={style}>
       {Array.from({ length: bars }).map((_, i) => (
         <span key={i} className="waveform-bar" />
       ))}
