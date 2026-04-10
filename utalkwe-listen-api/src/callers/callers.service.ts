@@ -177,6 +177,8 @@ export class CallersService {
       `- Phone: ${this.maskPhone(caller.phone)}`,
       `- Name: ${caller.name ?? 'not provided'}`,
       `- Guidance preference: ${caller.guidance_type ?? 'not set'}`,
+      `- Subscription: ${caller.subscription_tier}`,
+      `- Daily affirmations: ${caller.daily_affirmation_opt_in ? 'opted in' : 'not enrolled'}`,
       `- Total calls: ${caller.call_count}`,
     ];
 

@@ -124,6 +124,56 @@ export class SmsService {
     if (logErr) this.logger.error('Failed to write sms_log entry', logErr);
   }
 
+  // ─── Daily affirmation ───────────────────────────────────────────────────────
+
+  async sendDailyAffirmation(
+    callerId: string,
+    phone: string,
+    callerName: string | null,
+    isFaith: boolean,
+  ): Promise<void> {
+    const name = callerName ?? 'Friend';
+    const affirmation = isFaith
+      ? this.getFaithAffirmation()
+      : this.getGeneralAffirmation();
+
+    const body = [
+      `Good morning, ${name}.`,
+      '',
+      affirmation,
+      '',
+      '— Haven',
+    ].join('\n');
+
+    await this.sendWithLogging(callerId, phone, body, 'daily_wisdom');
+  }
+
+  private getFaithAffirmation(): string {
+    const affirmations = [
+      '"The Lord is my shepherd; I shall not want." — Psalm 23:1\nToday, trust that you are being led even when the path is unclear.',
+      '"For I know the plans I have for you," declares the Lord, "plans to prosper you and not to harm you." — Jeremiah 29:11\nYou are held. Even now.',
+      '"Be strong and courageous. Do not be afraid; do not be discouraged." — Joshua 1:9\nWhatever today brings, you don\'t face it alone.',
+      '"Cast all your anxiety on him because he cares for you." — 1 Peter 5:7\nYou don\'t have to carry it all. Let some of it go today.',
+      '"His mercies are new every morning; great is his faithfulness." — Lamentations 3:23\nThis is a fresh start. Receive it.',
+      '"I can do all things through Christ who strengthens me." — Philippians 4:13\nYou have more strength in you than you know.',
+      '"The peace of God, which transcends all understanding, will guard your hearts and minds." — Philippians 4:7\nBreathe. Peace is available to you right now.',
+    ];
+    return affirmations[Math.floor(Math.random() * affirmations.length)];
+  }
+
+  private getGeneralAffirmation(): string {
+    const affirmations = [
+      '"You are allowed to be both a masterpiece and a work in progress."\nGive yourself grace today.',
+      '"The only way out is through."\nOne step at a time. You\'re already moving.',
+      '"You cannot calm the storm, but you can calm yourself — and the storm will pass."\nBreathe first. Act second.',
+      '"What lies behind us and what lies before us are tiny matters compared to what lies within us." — Emerson\nYou have everything you need inside you.',
+      '"Start where you are. Use what you have. Do what you can." — Arthur Ashe\nThat is enough for today.',
+      '"Almost everything will work again if you unplug it for a few minutes — including you."\nRest is not quitting. Rest is refueling.',
+      '"You don\'t have to see the whole staircase. Just take the first step." — MLK Jr.\nToday, just take one step.',
+    ];
+    return affirmations[Math.floor(Math.random() * affirmations.length)];
+  }
+
   // ─── General follow-up (service communication — bypasses TCPA) ──────────────
 
   async sendCallFollowUp(

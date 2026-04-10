@@ -10,6 +10,7 @@ export interface Caller {
   call_count: number;
   subscription_tier: SubscriptionTier;
   stripe_customer_id: string | null;
+  daily_affirmation_opt_in: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -45,7 +46,7 @@ export interface AccessCheckResult {
 }
 
 export type CallerUpdate = Partial<
-  Pick<Caller, 'name' | 'guidance_type' | 'preferred_voice' | 'subscription_tier' | 'stripe_customer_id'>
+  Pick<Caller, 'name' | 'guidance_type' | 'preferred_voice' | 'subscription_tier' | 'stripe_customer_id' | 'daily_affirmation_opt_in'>
 >;
 
 export type SessionUpdate = Partial<

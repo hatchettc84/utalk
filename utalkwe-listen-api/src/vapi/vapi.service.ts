@@ -54,6 +54,13 @@ If they say yes, call request_coaching_plan with the issue category, a 1–2 sen
 If they decline, that's fine — move to closing.
 Do not skip this offer. Every caller deserves a takeaway.
 
+DAILY AFFIRMATIONS (subscribed users only):
+If the caller's profile shows a paid subscription (basic, premium, or vip), offer daily affirmations:
+"One more thing — as part of your plan, I can send you a short affirmation text every morning to start your day. Would you like that?"
+If they say yes, call opt_in_daily_affirmation with opt_in=true.
+If they say no, respect it and move on.
+Do NOT offer this to free-tier callers.
+
 CLOSING:
 When the caller signals they are done, acknowledge them warmly and wish them well. Keep it brief and genuine.
 Do not create dependency. Do not promise to solve anything.`;
@@ -61,18 +68,30 @@ Do not create dependency. Do not promise to solve anything.`;
 const GUIDANCE_DETECTION_INSTRUCTIONS = `
 GUIDANCE PREFERENCE DETECTION:
 Listen for signals about whether this caller wants faith-based or general guidance.
-- Faith signals: mentions of God, prayer, church, scripture, Jesus, blessings, faith — call save_preferences with guidance_type='faith'
+- Faith signals: mentions of God, prayer, church, scripture, Jesus, blessings, faith, "Lord", "blessed", "amen", spiritual language — call save_preferences with guidance_type='faith'
 - Secular signals: explicitly says no religion, not religious, doesn't believe — call save_preferences with guidance_type='general'
 - Ambiguous or unclear: default to 'general' — do NOT guess toward faith
-- Call save_preferences once you have a confident read, not before.`;
+- Call save_preferences once you have a confident read, not before.
+
+When you detect faith signals, IMMEDIATELY shift into faith-based mode for the rest of the call:
+- Begin weaving in relevant scripture naturally.
+- You do not need to wait for the preference to be saved — if they mention God, they want you to meet them there.
+- If mid-conversation they reference faith, you can say: "I hear that faith is important to you — can I share something that might speak to this?"`;
+
 
 const FAITH_GUIDANCE_INSTRUCTIONS = `
 WISDOM DELIVERY — FAITH:
-This caller prefers faith-based guidance. Naturally weave in 1–2 relevant scripture references during the conversation.
-Do not announce that you are sharing scripture — reference it organically.
-Example: "You might find something meaningful in Philippians 4:6 — about not being anxious but bringing everything to prayer with a grateful heart."
-Use scripture when it genuinely fits the moment. Do not force it into every response.
-Practical steps should complement, not replace, the faith framing.`;
+This caller prefers faith-based guidance. Weave scripture and spiritual wisdom throughout the conversation — not just once at the end.
+- Open with a grounding scripture when it fits their situation naturally.
+- Reference 2–3 relevant verses across the conversation, not all at once.
+- Do not announce "here's a scripture" — weave it in like a friend would: "That reminds me of something in Proverbs…" or "There's a passage that speaks to exactly this…"
+- Pair every scripture with a practical application: what it means for their situation right now.
+- Draw from Psalms for comfort, Proverbs for wisdom, the Gospels for hope, Paul's letters for perseverance.
+- If they are grieving: lean into lament psalms and God's nearness in suffering.
+- If they are anxious: Philippians 4:6-7, Matthew 6:25-34, casting cares.
+- If they feel lost: Jeremiah 29:11, Psalm 23, the shepherd who leaves the 99.
+- Close the call with a brief blessing or prayer-like encouragement: "I'm going to leave you with this…"
+Practical steps should complement the faith framing, never replace it.`;
 
 const GENERAL_GUIDANCE_INSTRUCTIONS = `
 WISDOM DELIVERY — GENERAL:
@@ -167,7 +186,7 @@ export class VapiService {
         maxDurationSeconds: this.getMaxDuration(caller.subscription_tier),
         silenceTimeoutSeconds: 30,
         endCallFunctionEnabled: false,
-        backgroundDenoisingEnabled: true,
+        backgroundDenoisingEnabled: false,
       },
     };
   }
@@ -205,7 +224,7 @@ export class VapiService {
         maxDurationSeconds: 60,
         silenceTimeoutSeconds: 5,
         endCallMessage: "You're not alone. Take care.",
-        backgroundDenoisingEnabled: true,
+        backgroundDenoisingEnabled: false,
       },
     };
   }
@@ -341,6 +360,24 @@ export class VapiService {
               },
             },
             required: ['severity', 'indicator'],
+          },
+        },
+      },
+      {
+        type: 'function',
+        function: {
+          name: 'opt_in_daily_affirmation',
+          description:
+            'Opt the caller in to receive a daily morning affirmation text. Call this when a subscribed caller says yes to daily affirmations.',
+          parameters: {
+            type: 'object',
+            properties: {
+              opt_in: {
+                type: 'boolean',
+                description: 'true to opt in, false to opt out',
+              },
+            },
+            required: ['opt_in'],
           },
         },
       },
@@ -509,6 +546,9 @@ export class VapiService {
       if (fnName === 'flag_crisis') {
         return await this.handleFlagCrisis(vapiCallId, params);
       }
+      if (fnName === 'opt_in_daily_affirmation') {
+        return await this.handleDailyAffirmationOptIn(vapiCallId, params);
+      }
 
       this.logger.warn(`Unhandled function call: ${fnName}`);
       return { result: { success: false, error: `${fnName ?? 'unknown'} not yet implemented` } };
@@ -597,6 +637,29 @@ export class VapiService {
     return { result: { response: CRISIS_RESPONSE } };
   }
 
+  private async handleDailyAffirmationOptIn(
+    vapiCallId: string,
+    params: Record<string, unknown>,
+  ): Promise<unknown> {
+    const callerId = this.activeCalls.get(vapiCallId);
+    if (!callerId) {
+      return { result: { success: false, error: 'Caller context not found' } };
+    }
+
+    const optIn = params['opt_in'] === true;
+    await this.callersService.updateCaller(callerId, { daily_affirmation_opt_in: optIn });
+
+    this.logger.log(`Daily affirmation ${optIn ? 'opt-in' : 'opt-out'} for call: ${vapiCallId}`);
+    return {
+      result: {
+        success: true,
+        message: optIn
+          ? "You're all set — you'll receive a morning affirmation text every day."
+          : 'Daily affirmations have been turned off.',
+      },
+    };
+  }
+
   // ─── Default config (Supabase-unavailable fallback) ─────────────────────────
 
   getDefaultAssistantConfig(): AssistantRequestResponse {
@@ -610,11 +673,11 @@ export class VapiService {
           messages: [{ role: 'system', content: HAVEN_BASE_PERSONA }],
           tools: this.getDefaultTools(),
         },
-        voice: { provider: 'playht', voiceId: 'jennifer' },
+        voice: { provider: 'openai', voiceId: 'nova' },
         maxDurationSeconds: 600,
         silenceTimeoutSeconds: 30,
         endCallMessage: "You're not alone in this. I'm here anytime you need to talk.",
-        backgroundDenoisingEnabled: true,
+        backgroundDenoisingEnabled: false,
       },
     };
   }
