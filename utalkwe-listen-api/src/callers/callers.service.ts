@@ -181,9 +181,16 @@ export class CallersService {
   // ─── Context building ───────────────────────────────────────────────────────
 
   async getOrCreateCallerContext(phone: string): Promise<CallerContext> {
-    const existing = await this.findByPhone(phone);
+    const normalized = this.normalizePhone(phone);
+    this.logger.log(`getOrCreateCallerContext: raw=${phone} normalized=${normalized}`);
+
+    const existing = await this.findByPhone(normalized);
     const isFirstCall = existing === null;
-    const caller: Caller = isFirstCall ? await this.createCaller(phone) : existing;
+    const caller: Caller = isFirstCall ? await this.createCaller(normalized) : existing;
+
+    this.logger.log(
+      `Caller ${isFirstCall ? 'CREATED' : 'FOUND'}: id=${caller.id} name=${caller.name ?? 'NONE'} callCount=${caller.call_count}`,
+    );
 
     const recentSessions = isFirstCall
       ? []

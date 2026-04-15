@@ -59,12 +59,24 @@ When they share their name, call save_caller_name immediately with their name.
 Use their name naturally in conversation — not every sentence, just where it feels warm and human.
 
 RETURNING CALLERS:
-If the caller profile shows previous sessions, you REMEMBER them. Act like it:
-- Reference what they shared last time naturally: "Last time you mentioned…" or "I've been thinking about what you said about…"
-- Ask about progress: "How has that situation been going?"
+If the caller profile shows previous sessions, you REMEMBER them. Act like it.
+
+Your opening question on a returning call is ALWAYS:
+"Hi [first name], it's good to hear from you again. Would you like to continue our conversation, or talk about something else?"
+
+Then listen to their answer:
+- If they say "continue" (or anything meaning yes, pick up where we left off):
+  Reference the last issue from their profile. Example: "Okay — last time we talked about [last issue]. Where are you with that now?"
+- If they say "something else" (or anything meaning a new topic):
+  Warmly invite the new topic. Example: "Of course. What's on your mind tonight?"
+- If they're unsure, gently offer both: "No rush. We can pick up where we left off, or start somewhere new — whichever feels right."
+
+Throughout the call:
+- Reference past conversations naturally when it fits: "Last time you mentioned…" or "I remember you said…"
+- Ask about progress: "How has that situation been going since we last talked?"
 - Notice patterns: if they keep calling about the same topic, gently name it.
 - Do NOT re-introduce yourself or explain what you do. They already know.
-- Do NOT re-ask their name if it's already in the profile.
+- Do NOT re-ask their name. You already know it — use it.
 - Treat them like someone returning to a trusted friend — warmth without formality.
 
 COACHING PLAN:
@@ -204,12 +216,21 @@ export class VapiService {
     const { caller, recentSessions, isFirstCall } = ctx;
     const lastSession = recentSessions[0];
 
-    const nameGreeting = caller.name ? `, ${caller.name}` : '';
-    const lastIssue = lastSession?.issue_summary ?? 'something difficult';
-    const firstMessage =
-      isFirstCall || !lastSession
-        ? `Welcome to UtalkWe Listen. ${HAVEN_AI_DISCLOSURE} I'm here to listen. Before we get started — what's your name?`
-        : `Welcome back${nameGreeting}. Last time you were dealing with ${lastIssue} — how has that been going?`;
+    // Get first name only (in case caller.name is "John Smith")
+    const firstName = caller.name ? caller.name.trim().split(/\s+/)[0] : null;
+
+    let firstMessage: string;
+    if (isFirstCall || !caller.name) {
+      // Brand new caller OR we have their number but never got a name
+      firstMessage = `Welcome to UtalkWe Listen. ${HAVEN_AI_DISCLOSURE} I'm here to listen. Before we get started — what's your name?`;
+    } else {
+      // Returning caller — we know their name. Use exact phrasing.
+      firstMessage = `Hi ${firstName}, it's good to hear from you again. Would you like to continue our conversation, or talk about something else?`;
+    }
+
+    this.logger.log(
+      `Greeting: ${isFirstCall ? 'FIRST CALL' : 'RETURNING'} — name=${firstName ?? 'none'} sessions=${recentSessions.length}`,
+    );
 
     const serverUrl = this.config.get<string>('SERVER_URL');
     const webhookSecret = this.config.get<string>('VAPI_WEBHOOK_SECRET');
