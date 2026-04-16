@@ -233,8 +233,8 @@ export class VapiService {
     );
     this.logger.log(`=== firstMessage === "${firstMessage}"`);
 
-    const serverUrl = this.config.get<string>('SERVER_URL');
-    const webhookSecret = this.config.get<string>('VAPI_WEBHOOK_SECRET');
+    // Server URL is configured on the phone number in Vapi dashboard —
+    // no need to duplicate it here. Avoids header/secret conflicts.
 
     return {
       assistant: {
@@ -248,13 +248,6 @@ export class VapiService {
           tools: this.getDefaultTools(),
         },
         voice: this.getVoiceConfig(ctx),
-        ...(serverUrl && {
-          serverUrl: `${serverUrl}/vapi/webhook`,
-          server: {
-            url: `${serverUrl}/vapi/webhook`,
-            ...(webhookSecret && { secret: webhookSecret }),
-          },
-        }),
         maxDurationSeconds: this.getMaxDuration(caller.subscription_tier),
         silenceTimeoutSeconds: 120,
         endCallFunctionEnabled: false,
@@ -926,9 +919,6 @@ export class VapiService {
   // ─── Default config (Supabase-unavailable fallback) ─────────────────────────
 
   getDefaultAssistantConfig(): AssistantRequestResponse {
-    const serverUrl = this.config.get<string>('SERVER_URL');
-    const webhookSecret = this.config.get<string>('VAPI_WEBHOOK_SECRET');
-
     return {
       assistant: {
         name: 'Haven',
@@ -940,13 +930,6 @@ export class VapiService {
           tools: this.getDefaultTools(),
         },
         voice: { provider: 'openai', voiceId: 'nova' },
-        ...(serverUrl && {
-          serverUrl: `${serverUrl}/vapi/webhook`,
-          server: {
-            url: `${serverUrl}/vapi/webhook`,
-            ...(webhookSecret && { secret: webhookSecret }),
-          },
-        }),
         maxDurationSeconds: 600,
         silenceTimeoutSeconds: 120,
         endCallMessage: "You're not alone in this. I'm here anytime you need to talk.",
