@@ -233,8 +233,8 @@ export class VapiService {
     );
     this.logger.log(`=== firstMessage === "${firstMessage}"`);
 
-    // Server URL is configured on the phone number in Vapi dashboard —
-    // no need to duplicate it here. Avoids header/secret conflicts.
+    // serverUrl tells Vapi where to send function-call webhooks (no secret — avoids header errors)
+    const serverUrl = this.config.get<string>('SERVER_URL');
 
     return {
       assistant: {
@@ -248,6 +248,7 @@ export class VapiService {
           tools: this.getDefaultTools(),
         },
         voice: this.getVoiceConfig(ctx),
+        ...(serverUrl && { serverUrl: `${serverUrl}/vapi/webhook` }),
         maxDurationSeconds: this.getMaxDuration(caller.subscription_tier),
         silenceTimeoutSeconds: 120,
         endCallFunctionEnabled: false,
