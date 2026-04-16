@@ -101,6 +101,7 @@ export interface AssistantServerConfig {
 export interface AssistantConfig {
   name: string;
   firstMessage: string;
+  firstMessageMode?: 'assistant-speaks-first' | 'assistant-waits-for-user';
   model: AssistantModel;
   voice: AssistantVoice;
   serverUrl?: string;

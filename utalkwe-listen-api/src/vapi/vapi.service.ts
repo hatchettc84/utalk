@@ -229,8 +229,9 @@ export class VapiService {
     }
 
     this.logger.log(
-      `Greeting: ${isFirstCall ? 'FIRST CALL' : 'RETURNING'} — name=${firstName ?? 'none'} sessions=${recentSessions.length}`,
+      `=== GREETING DECISION === isFirstCall=${isFirstCall} caller.name="${caller.name ?? 'NULL'}" firstName="${firstName ?? 'NONE'}" phone=${this.callersService.maskPhone(caller.phone)} callCount=${caller.call_count} sessions=${recentSessions.length}`,
     );
+    this.logger.log(`=== firstMessage === "${firstMessage}"`);
 
     const serverUrl = this.config.get<string>('SERVER_URL');
     const webhookSecret = this.config.get<string>('VAPI_WEBHOOK_SECRET');
@@ -239,6 +240,7 @@ export class VapiService {
       assistant: {
         name: 'Haven',
         firstMessage,
+        firstMessageMode: 'assistant-speaks-first',
         model: {
           provider: 'anthropic',
           model: 'claude-3-5-sonnet-20241022',
