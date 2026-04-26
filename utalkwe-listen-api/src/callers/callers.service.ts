@@ -14,17 +14,11 @@ import type {
 @Injectable()
 export class CallersService {
   private readonly logger = new Logger(CallersService.name);
-  private readonly freeCallsPerMonth: number;
 
   constructor(
     @Inject(SUPABASE_CLIENT) private readonly supabase: SupabaseClient,
     private readonly config: ConfigService,
-  ) {
-    this.freeCallsPerMonth = Number.parseInt(
-      this.config.get<string>('FREE_CALLS_PER_MONTH') ?? '3',
-      10,
-    );
-  }
+  ) {}
 
   // ─── Phone normalization & masking ───────────────────────────────────────────
 
@@ -213,6 +207,18 @@ export class CallersService {
       `- Total calls: ${caller.call_count}`,
     ];
 
+    // Minutes balance context — only relevant for non-subscribers
+    if (caller.subscription_tier === 'free') {
+      lines.push(`- Minutes remaining: ${caller.minutes_balance}`);
+
+      if (caller.minutes_balance > 0 && caller.minutes_balance <= 3) {
+        lines.push(
+          '',
+          'LOW BALANCE: This caller has only a few minutes left. Near the end of the call, gently let them know they can grab more minutes — Haven will text them options when the call ends. Do not interrupt the conversation about it.',
+        );
+      }
+    }
+
     if (!isFirstCall && lastSession) {
       lines.push(
         '',
@@ -242,41 +248,83 @@ export class CallersService {
     return lines.join('\n');
   }
 
-  // ─── Access control ─────────────────────────────────────────────────────────
+  // ─── Access control (prepaid minutes model) ─────────────────────────────────
 
+  /**
+   * Decision tree:
+   *   1. Subscriber (tier !== 'free')                          → allow (unlimited)
+   *   2. Non-subscriber with minutes_balance > 0               → allow (capped to balance)
+   *   3. Non-subscriber with 0 balance                         → deny (no_minutes)
+   */
   async canAccessCall(callerId: string): Promise<AccessCheckResult> {
     const { data: caller, error } = await this.supabase
       .from('callers')
-      .select('subscription_tier')
+      .select('subscription_tier, minutes_balance')
       .eq('id', callerId)
       .single();
 
     if (error) throw error;
 
-    const tier = (caller as { subscription_tier: string }).subscription_tier as
-      import('./callers.types').SubscriptionTier;
+    const row = caller as { subscription_tier: string; minutes_balance: number };
+    const tier = row.subscription_tier as import('./callers.types').SubscriptionTier;
+    const minutesBalance = row.minutes_balance ?? 0;
 
     if (tier !== 'free') {
       return { allowed: true, tier };
     }
 
-    // Count calls this calendar month
-    const startOfMonth = new Date();
-    startOfMonth.setDate(1);
-    startOfMonth.setHours(0, 0, 0, 0);
-
-    const { count, error: countErr } = await this.supabase
-      .from('call_sessions')
-      .select('id', { count: 'exact', head: true })
-      .eq('caller_id', callerId)
-      .gte('started_at', startOfMonth.toISOString());
-
-    if (countErr) throw countErr;
-
-    if ((count ?? 0) >= this.freeCallsPerMonth) {
-      return { allowed: false, tier: 'free', reason: 'free_limit_reached' };
+    if (minutesBalance > 0) {
+      return { allowed: true, tier: 'free', remainingMinutes: minutesBalance };
     }
 
-    return { allowed: true, tier: 'free' };
+    return { allowed: false, tier: 'free', reason: 'no_minutes', remainingMinutes: 0 };
+  }
+
+  // ─── Minutes balance management ─────────────────────────────────────────────
+
+  /**
+   * Deducts minutes from balance based on call duration in seconds.
+   * Uses ceiling: a 61s call = 2 minutes deducted.
+   * Floors at 0 — never goes negative.
+   * Returns the new balance after deduction.
+   */
+  async deductMinutes(callerId: string, secondsUsed: number): Promise<number> {
+    const { data, error } = await this.supabase.rpc('deduct_minutes', {
+      caller_id_input: callerId,
+      seconds_used: secondsUsed,
+    });
+
+    if (error) {
+      this.logger.error(`deduct_minutes RPC failed for ${callerId}`, error);
+      throw error;
+    }
+
+    const newBalance = typeof data === 'number' ? data : 0;
+    this.logger.log(
+      `deductMinutes: callerId=${callerId} seconds=${secondsUsed} newBalance=${newBalance}`,
+    );
+    return newBalance;
+  }
+
+  /**
+   * Adds minutes to a caller's balance after a successful pack purchase.
+   * Returns the new balance.
+   */
+  async addMinutes(callerId: string, minutesToAdd: number): Promise<number> {
+    const { data, error } = await this.supabase.rpc('add_minutes', {
+      caller_id_input: callerId,
+      minutes_to_add: minutesToAdd,
+    });
+
+    if (error) {
+      this.logger.error(`add_minutes RPC failed for ${callerId}`, error);
+      throw error;
+    }
+
+    const newBalance = typeof data === 'number' ? data : 0;
+    this.logger.log(
+      `addMinutes: callerId=${callerId} added=${minutesToAdd} newBalance=${newBalance}`,
+    );
+    return newBalance;
   }
 }

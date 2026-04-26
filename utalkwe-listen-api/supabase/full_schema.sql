@@ -25,12 +25,18 @@ CREATE TABLE IF NOT EXISTS callers (
                                        CHECK (subscription_tier IN ('free', 'basic', 'premium', 'vip')),
   stripe_customer_id       TEXT,
   daily_affirmation_opt_in BOOLEAN     NOT NULL DEFAULT FALSE,
+  minutes_balance          INTEGER     NOT NULL DEFAULT 5,
+  total_minutes_purchased  INTEGER     NOT NULL DEFAULT 0,
+  total_minutes_used       INTEGER     NOT NULL DEFAULT 0,
   created_at               TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at               TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Add column to existing table if upgrading
+-- Add columns to existing table if upgrading
 ALTER TABLE callers ADD COLUMN IF NOT EXISTS daily_affirmation_opt_in BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE callers ADD COLUMN IF NOT EXISTS minutes_balance INTEGER NOT NULL DEFAULT 5;
+ALTER TABLE callers ADD COLUMN IF NOT EXISTS total_minutes_purchased INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE callers ADD COLUMN IF NOT EXISTS total_minutes_used INTEGER NOT NULL DEFAULT 0;
 
 CREATE UNIQUE INDEX IF NOT EXISTS callers_phone_idx ON callers (phone);
 
@@ -125,6 +131,23 @@ CREATE TRIGGER update_subscriptions_updated_at
   BEFORE UPDATE ON subscriptions
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
+-- ─── minute_purchases (one-time pack purchases) ────────────────────────────
+CREATE TABLE IF NOT EXISTS minute_purchases (
+  id                         UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  caller_id                  UUID        NOT NULL REFERENCES callers(id) ON DELETE CASCADE,
+  stripe_payment_intent_id   TEXT        UNIQUE,
+  stripe_checkout_session_id TEXT        UNIQUE,
+  pack_name                  TEXT,
+  minutes                    INTEGER     NOT NULL,
+  amount_cents               INTEGER     NOT NULL,
+  status                     TEXT        NOT NULL DEFAULT 'completed'
+                                         CHECK (status IN ('pending', 'completed', 'refunded', 'failed')),
+  created_at                 TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS minute_purchases_caller_id_idx ON minute_purchases (caller_id);
+CREATE INDEX IF NOT EXISTS minute_purchases_created_at_idx ON minute_purchases (created_at DESC);
+
 -- ─── increment_call_count RPC (used by callers.service.ts) ─────────────────
 CREATE OR REPLACE FUNCTION increment_call_count(caller_id_input UUID)
 RETURNS void AS $$
@@ -133,25 +156,75 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- ─── deduct_minutes RPC ────────────────────────────────────────────────────
+-- Converts seconds to ceiling minutes, deducts from balance (floor 0),
+-- and tracks total_minutes_used. Used after each call ends.
+CREATE OR REPLACE FUNCTION deduct_minutes(caller_id_input UUID, seconds_used INTEGER)
+RETURNS INTEGER AS $$
+DECLARE
+  minutes_to_deduct INTEGER;
+  new_balance INTEGER;
+BEGIN
+  IF seconds_used IS NULL OR seconds_used <= 0 THEN
+    RETURN (SELECT minutes_balance FROM callers WHERE id = caller_id_input);
+  END IF;
+
+  -- Ceiling division: any partial minute counts as a full minute
+  minutes_to_deduct := CEIL(seconds_used::numeric / 60);
+
+  UPDATE callers
+  SET minutes_balance = GREATEST(0, minutes_balance - minutes_to_deduct),
+      total_minutes_used = total_minutes_used + minutes_to_deduct
+  WHERE id = caller_id_input
+  RETURNING minutes_balance INTO new_balance;
+
+  RETURN new_balance;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ─── add_minutes RPC ───────────────────────────────────────────────────────
+-- Adds minutes to balance after a successful pack purchase.
+CREATE OR REPLACE FUNCTION add_minutes(caller_id_input UUID, minutes_to_add INTEGER)
+RETURNS INTEGER AS $$
+DECLARE
+  new_balance INTEGER;
+BEGIN
+  IF minutes_to_add IS NULL OR minutes_to_add <= 0 THEN
+    RETURN (SELECT minutes_balance FROM callers WHERE id = caller_id_input);
+  END IF;
+
+  UPDATE callers
+  SET minutes_balance = minutes_balance + minutes_to_add,
+      total_minutes_purchased = total_minutes_purchased + minutes_to_add
+  WHERE id = caller_id_input
+  RETURNING minutes_balance INTO new_balance;
+
+  RETURN new_balance;
+END;
+$$ LANGUAGE plpgsql;
+
 -- ─── Row Level Security ────────────────────────────────────────────────────
-ALTER TABLE callers        ENABLE ROW LEVEL SECURITY;
-ALTER TABLE call_sessions  ENABLE ROW LEVEL SECURITY;
-ALTER TABLE coaching_plans ENABLE ROW LEVEL SECURITY;
-ALTER TABLE sms_log        ENABLE ROW LEVEL SECURITY;
-ALTER TABLE subscriptions  ENABLE ROW LEVEL SECURITY;
+ALTER TABLE callers          ENABLE ROW LEVEL SECURITY;
+ALTER TABLE call_sessions    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE coaching_plans   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE sms_log          ENABLE ROW LEVEL SECURITY;
+ALTER TABLE subscriptions    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE minute_purchases ENABLE ROW LEVEL SECURITY;
 
 -- service_role bypasses RLS by default; these policies ensure no accidental exposure.
-DROP POLICY IF EXISTS "callers_service_role_all"        ON callers;
-DROP POLICY IF EXISTS "call_sessions_service_role_all"  ON call_sessions;
-DROP POLICY IF EXISTS "coaching_plans_service_role_all" ON coaching_plans;
-DROP POLICY IF EXISTS "sms_log_service_role_all"        ON sms_log;
-DROP POLICY IF EXISTS "subscriptions_service_role_all"  ON subscriptions;
+DROP POLICY IF EXISTS "callers_service_role_all"          ON callers;
+DROP POLICY IF EXISTS "call_sessions_service_role_all"    ON call_sessions;
+DROP POLICY IF EXISTS "coaching_plans_service_role_all"   ON coaching_plans;
+DROP POLICY IF EXISTS "sms_log_service_role_all"          ON sms_log;
+DROP POLICY IF EXISTS "subscriptions_service_role_all"    ON subscriptions;
+DROP POLICY IF EXISTS "minute_purchases_service_role_all" ON minute_purchases;
 
-CREATE POLICY "callers_service_role_all"        ON callers        FOR ALL TO service_role USING (true) WITH CHECK (true);
-CREATE POLICY "call_sessions_service_role_all"  ON call_sessions  FOR ALL TO service_role USING (true) WITH CHECK (true);
-CREATE POLICY "coaching_plans_service_role_all" ON coaching_plans FOR ALL TO service_role USING (true) WITH CHECK (true);
-CREATE POLICY "sms_log_service_role_all"        ON sms_log        FOR ALL TO service_role USING (true) WITH CHECK (true);
-CREATE POLICY "subscriptions_service_role_all"  ON subscriptions  FOR ALL TO service_role USING (true) WITH CHECK (true);
+CREATE POLICY "callers_service_role_all"          ON callers          FOR ALL TO service_role USING (true) WITH CHECK (true);
+CREATE POLICY "call_sessions_service_role_all"    ON call_sessions    FOR ALL TO service_role USING (true) WITH CHECK (true);
+CREATE POLICY "coaching_plans_service_role_all"   ON coaching_plans   FOR ALL TO service_role USING (true) WITH CHECK (true);
+CREATE POLICY "sms_log_service_role_all"          ON sms_log          FOR ALL TO service_role USING (true) WITH CHECK (true);
+CREATE POLICY "subscriptions_service_role_all"    ON subscriptions    FOR ALL TO service_role USING (true) WITH CHECK (true);
+CREATE POLICY "minute_purchases_service_role_all" ON minute_purchases FOR ALL TO service_role USING (true) WITH CHECK (true);
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- DONE — verify with these queries:

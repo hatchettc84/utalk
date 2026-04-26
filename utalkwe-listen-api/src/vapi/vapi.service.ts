@@ -185,24 +185,24 @@ export class VapiService {
       // Store callerId so onCallStart can create the session without a second DB lookup
       this.activeCalls.set(vapiCallId, ctx.caller.id);
 
-      // Story 6.1: enforce subscription access before any conversation begins
+      // Enforce access before any conversation begins (subscription OR minutes balance)
       const access = await this.callersService.canAccessCall(ctx.caller.id);
       if (!access.allowed) {
         this.logger.log(
           `Access denied (${access.reason}) — ${this.callersService.maskPhone(phone)}`,
         );
-        // Story 6.2: send upgrade SMS (service communication — no TCPA consent needed)
+        // Send upgrade/pack SMS (service communication — no TCPA consent needed)
         setImmediate(() =>
           this.smsService
-            .sendUpgradePrompt(ctx.caller.id, phone, ctx.caller.name)
+            .sendUpgradePrompt(ctx.caller.id, phone, ctx.caller.name, access.reason)
             .catch(e => this.logger.error('sendUpgradePrompt failed', e)),
         );
-        return this.buildLimitReachedResponse(ctx);
+        return this.buildLimitReachedResponse(ctx, access.reason);
       }
 
-      const assistantConfig = this.buildAssistantFromContext(ctx);
+      const assistantConfig = this.buildAssistantFromContext(ctx, access.remainingMinutes);
       this.logger.log(
-        `assistant-request ${this.callersService.maskPhone(phone)} — ${Date.now() - start}ms`,
+        `assistant-request ${this.callersService.maskPhone(phone)} — ${Date.now() - start}ms — remainingMinutes=${access.remainingMinutes ?? 'unlimited'}`,
       );
       this.logger.log(`=== RESPONSE KEYS === ${JSON.stringify(Object.keys(assistantConfig.assistant))}`);
       return assistantConfig;
@@ -213,7 +213,10 @@ export class VapiService {
     }
   }
 
-  private buildAssistantFromContext(ctx: CallerContext): AssistantRequestResponse {
+  private buildAssistantFromContext(
+    ctx: CallerContext,
+    remainingMinutes?: number,
+  ): AssistantRequestResponse {
     const { caller, recentSessions, isFirstCall } = ctx;
     const lastSession = recentSessions[0];
 
@@ -245,7 +248,7 @@ export class VapiService {
           tools: this.getDefaultTools(),
         },
         voice: { provider: 'openai', voiceId: 'nova' },
-        maxDurationSeconds: this.getMaxDuration(caller.subscription_tier),
+        maxDurationSeconds: this.getMaxDuration(caller.subscription_tier, remainingMinutes),
         silenceTimeoutSeconds: 120,
       },
     };
@@ -254,17 +257,26 @@ export class VapiService {
     return response;
   }
 
-  // ─── Story 6.2: Limit-reached response ──────────────────────────────────────
+  // ─── Limit-reached response ─────────────────────────────────────────────────
 
-  private buildLimitReachedResponse(ctx: CallerContext): AssistantRequestResponse {
+  private buildLimitReachedResponse(
+    ctx: CallerContext,
+    reason?: 'free_limit_reached' | 'no_minutes',
+  ): AssistantRequestResponse {
     const { caller } = ctx;
     const nameClause = caller.name ? `, ${caller.name}` : '';
+
     const firstMessage =
-      `Hey${nameClause}, good to hear from you. I want to be upfront — ` +
-      "you've used your free calls for this month. " +
-      "I just sent you a text with options to continue. " +
-      "I'm sorry I can't be fully here tonight, but you're not alone — " +
-      "reach back out when you're ready.";
+      reason === 'no_minutes'
+        ? `Hey${nameClause}, it's good to hear from you. I want to be upfront — ` +
+          "you're out of minutes right now. " +
+          "I just sent you a text with options to grab more — packs start at five dollars. " +
+          "I'll be right here when you're ready. Take care."
+        : `Hey${nameClause}, good to hear from you. I want to be upfront — ` +
+          "you've used your free calls for this month. " +
+          "I just sent you a text with options to continue. " +
+          "I'm sorry I can't be fully here tonight, but you're not alone — " +
+          "reach back out when you're ready.";
 
     return {
       assistant: {
@@ -447,17 +459,27 @@ export class VapiService {
     ];
   }
 
-  // ─── Story 3.3: Tier-aware duration ─────────────────────────────────────────
+  // ─── Tier + minutes-aware duration ──────────────────────────────────────────
 
-  getMaxDuration(tier: SubscriptionTier): number {
-    if (tier === 'free') {
-      const minutes = Number.parseInt(
-        this.config.get<string>('FREE_CALL_MAX_MINUTES') ?? '10',
-        10,
-      );
-      return minutes * 60;
+  /**
+   * Caps call length:
+   *   - Subscriber → PAID_MAX_SECONDS (45 min)
+   *   - Free-tier with prepaid balance → min(PAID_MAX_SECONDS, balance * 60)
+   *     so a caller with 3 min left only gets 3 min before Vapi auto-hangs up.
+   */
+  getMaxDuration(tier: SubscriptionTier, remainingMinutes?: number): number {
+    if (tier !== 'free') {
+      return PAID_MAX_SECONDS;
     }
-    return PAID_MAX_SECONDS;
+
+    // Free tier: cap to balance, but never longer than the paid max.
+    const balanceSeconds = (remainingMinutes ?? 0) * 60;
+    if (balanceSeconds > 0) {
+      return Math.min(PAID_MAX_SECONDS, balanceSeconds);
+    }
+
+    // Defensive fallback (canAccessCall should have already denied this case)
+    return 60;
   }
 
   // ─── call-start ─────────────────────────────────────────────────────────────
@@ -542,6 +564,22 @@ export class VapiService {
       });
 
       await this.callersService.incrementCallCount(callerId);
+
+      // Deduct minutes from balance for non-subscribers
+      if (durationSeconds && durationSeconds > 0) {
+        try {
+          const callerRecord = await this.callersService.findById(callerId);
+          if (callerRecord && callerRecord.subscription_tier === 'free') {
+            const newBalance = await this.callersService.deductMinutes(callerId, durationSeconds);
+            this.logger.log(
+              `Minutes deducted for ${vapiCallId}: duration=${durationSeconds}s newBalance=${newBalance}min`,
+            );
+          }
+        } catch (err) {
+          this.logger.error(`Minute deduction failed for ${vapiCallId}`, err);
+        }
+      }
+
       this.activeCalls.delete(vapiCallId);
 
       if (currentSession?.was_crisis) {

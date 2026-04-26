@@ -11,6 +11,9 @@ export interface Caller {
   subscription_tier: SubscriptionTier;
   stripe_customer_id: string | null;
   daily_affirmation_opt_in: boolean;
+  minutes_balance: number;
+  total_minutes_purchased: number;
+  total_minutes_used: number;
   created_at: string;
   updated_at: string;
 }
@@ -42,7 +45,9 @@ export interface CallerContext {
 export interface AccessCheckResult {
   allowed: boolean;
   tier: SubscriptionTier;
-  reason?: 'free_limit_reached';
+  reason?: 'free_limit_reached' | 'no_minutes';
+  /** Remaining prepaid minutes for non-subscribers. Undefined for subscribers (unlimited). */
+  remainingMinutes?: number;
 }
 
 export type CallerUpdate = Partial<

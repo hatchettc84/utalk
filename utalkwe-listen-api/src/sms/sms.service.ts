@@ -13,6 +13,10 @@ export class SmsService {
   private readonly linkBasic: string;
   private readonly linkPremium: string;
   private readonly linkVip: string;
+  private readonly packStarter: string;
+  private readonly packPlus: string;
+  private readonly packPro: string;
+  private readonly packVip: string;
 
   constructor(
     @Inject(SUPABASE_CLIENT) private readonly supabase: SupabaseClient,
@@ -26,6 +30,10 @@ export class SmsService {
     this.linkBasic = config.get<string>('STRIPE_PAYMENT_LINK_BASIC') ?? '';
     this.linkPremium = config.get<string>('STRIPE_PAYMENT_LINK_PREMIUM') ?? '';
     this.linkVip = config.get<string>('STRIPE_PAYMENT_LINK_VIP') ?? '';
+    this.packStarter = config.get<string>('STRIPE_PAYMENT_LINK_PACK_STARTER') ?? '';
+    this.packPlus = config.get<string>('STRIPE_PAYMENT_LINK_PACK_PLUS') ?? '';
+    this.packPro = config.get<string>('STRIPE_PAYMENT_LINK_PACK_PRO') ?? '';
+    this.packVip = config.get<string>('STRIPE_PAYMENT_LINK_PACK_VIP') ?? '';
   }
 
   // ─── TCPA-gated send ─────────────────────────────────────────────────────────
@@ -61,20 +69,58 @@ export class SmsService {
     callerId: string,
     phone: string,
     callerName: string | null,
+    reason?: 'free_limit_reached' | 'no_minutes',
   ): Promise<void> {
     const name = callerName ?? 'there';
-    const lines = [
-      `Hey ${name} — this is Haven.`,
-      "You've used your free calls for this month.",
-      '',
-      'To keep talking, choose a plan:',
-    ];
-    if (this.linkBasic) lines.push(`• Basic (unlimited calls): ${this.linkBasic}`);
-    if (this.linkPremium) lines.push(`• Premium: ${this.linkPremium}`);
-    if (this.linkVip) lines.push(`• VIP: ${this.linkVip}`);
+    const lines: string[] = [`Hey ${name} — this is Haven.`];
+
+    if (reason === 'no_minutes') {
+      lines.push("You've used up your minutes. Here are some packs to keep going:");
+    } else {
+      lines.push("You've used your free time. Here are options to keep talking:");
+    }
+    lines.push('');
+
+    // Primary: minute packs (one-time purchase)
+    if (this.packStarter) lines.push(`• Starter — 25 min for $5: ${this.packStarter}`);
+    if (this.packPlus)    lines.push(`• Plus — 90 min for $15: ${this.packPlus}`);
+    if (this.packPro)     lines.push(`• Pro — 200 min for $30: ${this.packPro}`);
+    if (this.packVip)     lines.push(`• VIP — 400 min for $50: ${this.packVip}`);
+
+    // Secondary: subscriptions (only if any link is configured)
+    const hasSubs = this.linkBasic || this.linkPremium || this.linkVip;
+    if (hasSubs) {
+      lines.push('', 'Or unlimited monthly:');
+      if (this.linkBasic)   lines.push(`• Basic: ${this.linkBasic}`);
+      if (this.linkPremium) lines.push(`• Premium: ${this.linkPremium}`);
+      if (this.linkVip)     lines.push(`• VIP: ${this.linkVip}`);
+    }
+
     lines.push('', "You're not alone — I'll be here when you're ready.");
 
     await this.sendWithLogging(callerId, phone, lines.join('\n'), 'subscription');
+  }
+
+  /**
+   * Confirmation SMS sent right after a successful pack purchase.
+   */
+  async sendPackPurchaseConfirmation(
+    callerId: string,
+    phone: string,
+    callerName: string | null,
+    minutesAdded: number,
+    newBalance: number,
+  ): Promise<void> {
+    const name = callerName ?? 'there';
+    const body = [
+      `Hey ${name} — this is Haven.`,
+      '',
+      `Got your ${minutesAdded}-minute pack. You now have ${newBalance} minutes.`,
+      '',
+      "Call anytime — I'm here.",
+    ].join('\n');
+
+    await this.sendWithLogging(callerId, phone, body, 'subscription');
   }
 
   // ─── Internals ───────────────────────────────────────────────────────────────

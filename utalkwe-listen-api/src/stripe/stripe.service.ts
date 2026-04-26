@@ -2,7 +2,9 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
+import { CallersService } from '../callers/callers.service';
 import type { SubscriptionTier } from '../callers/callers.types';
+import { SmsService } from '../sms/sms.service';
 import { SUPABASE_CLIENT } from '../supabase/supabase.module';
 import type { PriceToTierMap } from './stripe.types';
 
@@ -16,13 +18,15 @@ export class StripeService {
   constructor(
     @Inject(SUPABASE_CLIENT) private readonly supabase: SupabaseClient,
     private readonly config: ConfigService,
+    private readonly callersService: CallersService,
+    private readonly smsService: SmsService,
   ) {
     this.stripe = new Stripe(config.getOrThrow<string>('STRIPE_SECRET_KEY'));
     this.webhookSecret = config.getOrThrow<string>('STRIPE_WEBHOOK_SECRET');
     this.priceToTier = {
-      [config.getOrThrow<string>('STRIPE_PRICE_BASIC')]: 'basic',
-      [config.getOrThrow<string>('STRIPE_PRICE_PREMIUM')]: 'premium',
-      [config.getOrThrow<string>('STRIPE_PRICE_VIP')]: 'vip',
+      [config.get<string>('STRIPE_PRICE_BASIC') ?? '']: 'basic',
+      [config.get<string>('STRIPE_PRICE_PREMIUM') ?? '']: 'premium',
+      [config.get<string>('STRIPE_PRICE_VIP') ?? '']: 'vip',
     };
   }
 
@@ -52,6 +56,13 @@ export class StripeService {
   // ─── checkout.session.completed ─────────────────────────────────────────────
 
   private async onCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
+    if (session.mode === 'payment') {
+      // One-time minute pack purchase
+      await this.onPackPurchase(session);
+      return;
+    }
+
+    // Subscription flow (existing behavior)
     const callerId = session.client_reference_id;
     const stripeCustomerId = this.resolveId(session.customer);
     const stripeSubscriptionId = this.resolveId(session.subscription);
@@ -88,6 +99,95 @@ export class StripeService {
     if (subErr) this.logger.error('Failed to upsert subscription record', subErr);
 
     this.logger.log(`Checkout complete: caller ${callerId} → tier ${tier}`);
+  }
+
+  // ─── One-time pack purchase ─────────────────────────────────────────────────
+
+  /**
+   * Handles `mode: 'payment'` checkout sessions for minute packs.
+   * The Payment Link metadata must include `pack_minutes` (e.g. "25").
+   * The buyer's phone number comes from the session's customer details.
+   * Idempotent via UNIQUE constraint on stripe_checkout_session_id.
+   */
+  private async onPackPurchase(session: Stripe.Checkout.Session): Promise<void> {
+    const sessionId = session.id;
+    const paymentIntentId = this.resolveId(session.payment_intent);
+    const amountCents = session.amount_total ?? 0;
+
+    // Pull pack_minutes from session metadata (Payment Link metadata flows through)
+    const metadata = session.metadata ?? {};
+    const packMinutesStr = metadata['pack_minutes'];
+    const packName = metadata['pack_name'] ?? `Pack ${packMinutesStr ?? '?'}`;
+    const minutes = packMinutesStr ? Number.parseInt(packMinutesStr, 10) : NaN;
+
+    if (!Number.isFinite(minutes) || minutes <= 0) {
+      this.logger.error(
+        `Pack purchase missing/invalid pack_minutes metadata: session=${sessionId} metadata=${JSON.stringify(metadata)}`,
+      );
+      return;
+    }
+
+    // Find caller by phone — buyer enters it during Stripe Checkout
+    const phone = session.customer_details?.phone ?? '';
+    if (!phone) {
+      this.logger.error(`Pack purchase has no phone — cannot link to caller. session=${sessionId}`);
+      return;
+    }
+
+    const normalized = this.callersService.normalizePhone(phone);
+    const caller = await this.callersService.findByPhone(normalized);
+    if (!caller) {
+      this.logger.error(
+        `Pack purchase: no caller found for phone ${this.callersService.maskPhone(normalized)}. session=${sessionId}`,
+      );
+      return;
+    }
+
+    // Idempotency check — skip if we've already processed this session
+    const { data: existing } = await this.supabase
+      .from('minute_purchases')
+      .select('id')
+      .eq('stripe_checkout_session_id', sessionId)
+      .maybeSingle();
+    if (existing) {
+      this.logger.log(`Pack purchase already processed: session=${sessionId}`);
+      return;
+    }
+
+    // 1) Insert purchase record
+    const { error: insertErr } = await this.supabase.from('minute_purchases').insert({
+      caller_id: caller.id,
+      stripe_payment_intent_id: paymentIntentId,
+      stripe_checkout_session_id: sessionId,
+      pack_name: packName,
+      minutes,
+      amount_cents: amountCents,
+      status: 'completed',
+    });
+    if (insertErr) {
+      this.logger.error('Failed to insert minute_purchases row', insertErr);
+      return;
+    }
+
+    // 2) Add minutes to balance
+    const newBalance = await this.callersService.addMinutes(caller.id, minutes);
+
+    // 3) Send confirmation SMS (service communication — no TCPA gate needed)
+    try {
+      await this.smsService.sendPackPurchaseConfirmation(
+        caller.id,
+        normalized,
+        caller.name,
+        minutes,
+        newBalance,
+      );
+    } catch (err) {
+      this.logger.error('Pack purchase confirmation SMS failed', err);
+    }
+
+    this.logger.log(
+      `Pack purchase processed: caller=${caller.id} pack=${packName} minutes=${minutes} newBalance=${newBalance}`,
+    );
   }
 
   // ─── customer.subscription.updated ──────────────────────────────────────────
