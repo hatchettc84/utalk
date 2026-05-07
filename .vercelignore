@@ -1,0 +1,5 @@
+# Vercel only builds the Next.js website at the repo root.
+# The NestJS API is deployed separately to Railway.
+utalkwe-listen-api
+docs
+.DS_Store
