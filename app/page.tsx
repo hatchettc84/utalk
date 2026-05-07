@@ -500,13 +500,13 @@ function Pricing() {
     {
       name: 'Free',
       price: '$0',
-      period: 'forever',
+      period: 'first call',
       tagline: 'Try Haven. No strings attached.',
       color: 'border-haven-sage/20',
       badge: null,
       cta: { label: `Call ${CONFIG.phone}`, href: `tel:${CONFIG.phone.replace(/-/g,'')}`, style: 'border border-haven-sage/40 text-haven-mist hover:border-haven-sage' },
       features: [
-        '5 free minutes per month',
+        'First 10-minute call free',
         'Full Haven experience',
         'Faith/general guidance',
         'Post-call SMS plan (opt-in)',
@@ -515,55 +515,37 @@ function Pricing() {
       note: 'No credit card required',
     },
     {
-      name: 'Basic',
-      price: '$9',
-      period: 'one-time',
-      tagline: '30 minutes that never expire.',
+      name: 'Quick Call',
+      price: '$0.99',
+      period: 'per minute',
+      tagline: 'Pay only for what you need.',
       color: 'border-haven-gold/60',
       badge: 'Most Popular',
-      cta: { label: 'Buy Basic Pack', href: CONFIG.stripeBasic, style: 'bg-haven-gold text-haven-void hover:bg-haven-amber' },
+      cta: { label: 'Buy a Quick Call', href: CONFIG.stripeBasic, style: 'bg-haven-gold text-haven-void hover:bg-haven-amber' },
       features: [
-        '30 minutes total',
-        'Pay once · No subscription',
+        'Pay-as-you-go pricing',
+        'No subscription required',
         'Minutes never expire',
         'Full Haven experience',
         'Faith/general guidance',
         'Memory across calls',
       ],
-      note: 'One-time payment',
+      note: 'Pay-per-minute · No commitment',
     },
     {
-      name: 'Premium',
-      price: '$25',
+      name: 'Unlimited',
+      price: '$29.99',
       period: 'per month',
-      tagline: '45 minutes every month.',
-      color: 'border-haven-sage/30',
-      badge: null,
-      cta: { label: 'Start Premium', href: CONFIG.stripePremium, style: 'border border-haven-gold/40 text-haven-gold hover:border-haven-gold' },
-      features: [
-        '45 minutes per month',
-        'Full Haven experience',
-        'Daily wisdom SMS texts',
-        'Weekly personalized plan',
-        'Deep memory & history',
-        'Cancel anytime',
-      ],
-      note: 'Billed monthly · Cancel anytime',
-    },
-    {
-      name: 'VIP',
-      price: '$12',
-      period: 'per month',
-      tagline: '80 minutes every month.',
+      tagline: 'Talk as much as you need.',
       color: 'border-haven-cream/10',
       badge: null,
-      cta: { label: 'Start VIP', href: CONFIG.stripeVip, style: 'border border-haven-cream/30 text-haven-cream hover:border-haven-cream/60' },
+      cta: { label: 'Start Unlimited', href: CONFIG.stripeVip, style: 'border border-haven-cream/30 text-haven-cream hover:border-haven-cream/60' },
       features: [
-        '80 minutes per month',
+        'Unlimited calls',
+        'Unlimited minutes',
         'Full Haven experience',
-        'Daily check-in cadence',
-        'Custom coaching arc',
-        'First access to new features',
+        'Daily wisdom SMS texts',
+        'Deep memory & history',
         'Cancel anytime',
       ],
       note: 'Billed monthly · Cancel anytime',
@@ -585,7 +567,7 @@ function Pricing() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
           {plans.map((plan, i) => (
             <div key={i} className={`relative card-glass rounded-3xl p-7 border ${plan.color} card-glow transition-all duration-300 flex flex-col ${plan.badge ? 'ring-1 ring-haven-gold/30' : ''}`}>
               {plan.badge && (
