@@ -11,7 +11,7 @@ import {
 // CONFIGURATION — Replace with real values
 // ─────────────────────────────────────────
 const CONFIG = {
-  phone: process.env.NEXT_PUBLIC_PHONE_NUMBER ?? '1-888-882-5593',
+  phone: process.env.NEXT_PUBLIC_PHONE_NUMBER ?? '1-202-980-3980',
   stripeBasic:   process.env.NEXT_PUBLIC_STRIPE_LINK_BASIC   ?? '#pricing',
   stripePremium: process.env.NEXT_PUBLIC_STRIPE_LINK_PREMIUM ?? '#pricing',
   stripeVip:     process.env.NEXT_PUBLIC_STRIPE_LINK_VIP     ?? '#pricing',
