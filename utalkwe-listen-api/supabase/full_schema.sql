@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS callers (
                                        CHECK (subscription_tier IN ('free', 'basic', 'premium', 'vip')),
   stripe_customer_id       TEXT,
   daily_affirmation_opt_in BOOLEAN     NOT NULL DEFAULT FALSE,
-  minutes_balance          INTEGER     NOT NULL DEFAULT 5,
+  minutes_balance          INTEGER     NOT NULL DEFAULT 10,
   total_minutes_purchased  INTEGER     NOT NULL DEFAULT 0,
   total_minutes_used       INTEGER     NOT NULL DEFAULT 0,
   created_at               TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -34,7 +34,8 @@ CREATE TABLE IF NOT EXISTS callers (
 
 -- Add columns to existing table if upgrading
 ALTER TABLE callers ADD COLUMN IF NOT EXISTS daily_affirmation_opt_in BOOLEAN NOT NULL DEFAULT FALSE;
-ALTER TABLE callers ADD COLUMN IF NOT EXISTS minutes_balance INTEGER NOT NULL DEFAULT 5;
+ALTER TABLE callers ADD COLUMN IF NOT EXISTS minutes_balance INTEGER NOT NULL DEFAULT 10;
+ALTER TABLE callers ALTER COLUMN minutes_balance SET DEFAULT 10;
 ALTER TABLE callers ADD COLUMN IF NOT EXISTS total_minutes_purchased INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE callers ADD COLUMN IF NOT EXISTS total_minutes_used INTEGER NOT NULL DEFAULT 0;
 

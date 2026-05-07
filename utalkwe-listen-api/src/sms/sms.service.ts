@@ -10,13 +10,10 @@ export class SmsService {
   private readonly logger = new Logger(SmsService.name);
   private readonly client: ReturnType<typeof Twilio>;
   private readonly fromNumber: string;
-  private readonly linkBasic: string;
-  private readonly linkPremium: string;
-  private readonly linkVip: string;
-  private readonly packStarter: string;
-  private readonly packPlus: string;
-  private readonly packPro: string;
-  private readonly packVip: string;
+  private readonly quickCall10: string;
+  private readonly quickCall30: string;
+  private readonly quickCall60: string;
+  private readonly unlimitedLink: string;
 
   constructor(
     @Inject(SUPABASE_CLIENT) private readonly supabase: SupabaseClient,
@@ -27,13 +24,12 @@ export class SmsService {
       config.getOrThrow<string>('TWILIO_AUTH_TOKEN'),
     );
     this.fromNumber = config.getOrThrow<string>('TWILIO_PHONE_NUMBER');
-    this.linkBasic = config.get<string>('STRIPE_PAYMENT_LINK_BASIC') ?? '';
-    this.linkPremium = config.get<string>('STRIPE_PAYMENT_LINK_PREMIUM') ?? '';
-    this.linkVip = config.get<string>('STRIPE_PAYMENT_LINK_VIP') ?? '';
-    this.packStarter = config.get<string>('STRIPE_PAYMENT_LINK_PACK_STARTER') ?? '';
-    this.packPlus = config.get<string>('STRIPE_PAYMENT_LINK_PACK_PLUS') ?? '';
-    this.packPro = config.get<string>('STRIPE_PAYMENT_LINK_PACK_PRO') ?? '';
-    this.packVip = config.get<string>('STRIPE_PAYMENT_LINK_PACK_VIP') ?? '';
+    // Quick Call packs — $0.99 / minute
+    this.quickCall10 = config.get<string>('STRIPE_PAYMENT_LINK_QUICK_10') ?? '';
+    this.quickCall30 = config.get<string>('STRIPE_PAYMENT_LINK_QUICK_30') ?? '';
+    this.quickCall60 = config.get<string>('STRIPE_PAYMENT_LINK_QUICK_60') ?? '';
+    // Unlimited monthly subscription — $29.99 / month
+    this.unlimitedLink = config.get<string>('STRIPE_PAYMENT_LINK_UNLIMITED') ?? '';
   }
 
   // ─── TCPA-gated send ─────────────────────────────────────────────────────────
@@ -75,25 +71,22 @@ export class SmsService {
     const lines: string[] = [`Hey ${name} — this is Haven.`];
 
     if (reason === 'no_minutes') {
-      lines.push("You've used up your minutes. Here are some packs to keep going:");
+      lines.push("You've used up your minutes. Here are options to keep going:");
     } else {
       lines.push("You've used your free time. Here are options to keep talking:");
     }
     lines.push('');
 
-    // Primary: minute packs (one-time purchase)
-    if (this.packStarter) lines.push(`• Starter — 25 min for $5: ${this.packStarter}`);
-    if (this.packPlus)    lines.push(`• Plus — 90 min for $15: ${this.packPlus}`);
-    if (this.packPro)     lines.push(`• Pro — 200 min for $30: ${this.packPro}`);
-    if (this.packVip)     lines.push(`• VIP — 400 min for $50: ${this.packVip}`);
+    // Quick Call packs (pay-as-you-go at $0.99 / min)
+    lines.push('Quick Call ($0.99/min, no subscription):');
+    if (this.quickCall10) lines.push(`• 10 min for $9.90: ${this.quickCall10}`);
+    if (this.quickCall30) lines.push(`• 30 min for $29.70: ${this.quickCall30}`);
+    if (this.quickCall60) lines.push(`• 60 min for $59.40: ${this.quickCall60}`);
 
-    // Secondary: subscriptions (only if any link is configured)
-    const hasSubs = this.linkBasic || this.linkPremium || this.linkVip;
-    if (hasSubs) {
-      lines.push('', 'Or unlimited monthly:');
-      if (this.linkBasic)   lines.push(`• Basic: ${this.linkBasic}`);
-      if (this.linkPremium) lines.push(`• Premium: ${this.linkPremium}`);
-      if (this.linkVip)     lines.push(`• VIP: ${this.linkVip}`);
+    // Unlimited monthly subscription
+    if (this.unlimitedLink) {
+      lines.push('', 'Or unlimited calls every month for $29.99:');
+      lines.push(`• Unlimited: ${this.unlimitedLink}`);
     }
 
     lines.push('', "You're not alone — I'll be here when you're ready.");

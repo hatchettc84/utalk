@@ -12,6 +12,11 @@ import {
 // ─────────────────────────────────────────
 const CONFIG = {
   phone: process.env.NEXT_PUBLIC_PHONE_NUMBER ?? '1-202-980-3980',
+  // Quick Call ($0.99/min) — single Stripe Payment Link or default to first pack
+  stripeQuickCall: process.env.NEXT_PUBLIC_STRIPE_LINK_QUICK_CALL ?? '#pricing',
+  // Unlimited monthly subscription ($29.99/mo)
+  stripeUnlimited: process.env.NEXT_PUBLIC_STRIPE_LINK_UNLIMITED ?? '#pricing',
+  // Legacy aliases (kept so older deploys with old env vars still work)
   stripeBasic:   process.env.NEXT_PUBLIC_STRIPE_LINK_BASIC   ?? '#pricing',
   stripePremium: process.env.NEXT_PUBLIC_STRIPE_LINK_PREMIUM ?? '#pricing',
   stripeVip:     process.env.NEXT_PUBLIC_STRIPE_LINK_VIP     ?? '#pricing',
@@ -521,7 +526,7 @@ function Pricing() {
       tagline: 'Pay only for what you need.',
       color: 'border-haven-gold/60',
       badge: 'Most Popular',
-      cta: { label: 'Buy a Quick Call', href: CONFIG.stripeBasic, style: 'bg-haven-gold text-haven-void hover:bg-haven-amber' },
+      cta: { label: 'Buy a Quick Call', href: CONFIG.stripeQuickCall, style: 'bg-haven-gold text-haven-void hover:bg-haven-amber' },
       features: [
         'Pay-as-you-go pricing',
         'No subscription required',
@@ -539,7 +544,7 @@ function Pricing() {
       tagline: 'Talk as much as you need.',
       color: 'border-haven-cream/10',
       badge: null,
-      cta: { label: 'Start Unlimited', href: CONFIG.stripeVip, style: 'border border-haven-cream/30 text-haven-cream hover:border-haven-cream/60' },
+      cta: { label: 'Start Unlimited', href: CONFIG.stripeUnlimited, style: 'border border-haven-cream/30 text-haven-cream hover:border-haven-cream/60' },
       features: [
         'Unlimited calls',
         'Unlimited minutes',

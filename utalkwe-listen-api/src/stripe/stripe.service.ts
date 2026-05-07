@@ -23,7 +23,12 @@ export class StripeService {
   ) {
     this.stripe = new Stripe(config.getOrThrow<string>('STRIPE_SECRET_KEY'));
     this.webhookSecret = config.getOrThrow<string>('STRIPE_WEBHOOK_SECRET');
+    // Map Stripe price IDs to internal subscription tiers.
+    // Currently only 'unlimited' ($29.99/mo) is offered — internally stored as 'vip'
+    // (the existing DB CHECK constraint allows free/basic/premium/vip).
+    // Old basic/premium/vip env vars retained for backward compat.
     this.priceToTier = {
+      [config.get<string>('STRIPE_PRICE_UNLIMITED') ?? '']: 'vip',
       [config.get<string>('STRIPE_PRICE_BASIC') ?? '']: 'basic',
       [config.get<string>('STRIPE_PRICE_PREMIUM') ?? '']: 'premium',
       [config.get<string>('STRIPE_PRICE_VIP') ?? '']: 'vip',
