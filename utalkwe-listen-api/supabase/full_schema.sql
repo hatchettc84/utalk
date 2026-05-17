@@ -103,8 +103,10 @@ CREATE TABLE IF NOT EXISTS sms_log (
   body         TEXT        NOT NULL,
   twilio_sid   TEXT,
   sent_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  status       TEXT        NOT NULL DEFAULT 'sent'
-                           CHECK (status IN ('sent', 'failed', 'pending'))
+  status        TEXT        NOT NULL DEFAULT 'sent'
+                            CHECK (status IN ('sent', 'failed', 'pending')),
+  error_code    TEXT,
+  error_message TEXT
 );
 
 CREATE INDEX IF NOT EXISTS sms_log_caller_id_idx ON sms_log (caller_id);
