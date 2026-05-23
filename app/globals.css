@@ -163,3 +163,52 @@ body::before {
 .bg-radial-gold {
   background: radial-gradient(ellipse at center, rgba(201, 148, 58, 0.15) 0%, transparent 70%);
 }
+
+/* Legal pages */
+.legal-prose h2 {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: var(--haven-cream);
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+}
+.legal-prose h2:first-child {
+  margin-top: 0;
+}
+.legal-prose h3 {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: var(--haven-mist);
+  margin-top: 1.75rem;
+  margin-bottom: 0.75rem;
+}
+.legal-prose p,
+.legal-prose li {
+  color: #a8c4b0;
+  line-height: 1.75;
+  font-size: 1rem;
+}
+.legal-prose p {
+  margin-bottom: 1rem;
+}
+.legal-prose ul,
+.legal-prose ol {
+  margin: 0 0 1rem 1.25rem;
+}
+.legal-prose li {
+  margin-bottom: 0.5rem;
+}
+.legal-prose a {
+  color: var(--haven-gold);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.legal-prose a:hover {
+  color: var(--haven-amber);
+}
+.legal-prose strong {
+  color: var(--haven-cream);
+  font-weight: 600;
+}
