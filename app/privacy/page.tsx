@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description: 'How UtalkWe Listen collects, uses, and protects your information when you use Haven.',
 }
 
-const LAST_UPDATED = 'May 23, 2026'
+const LAST_UPDATED = 'June 2, 2026'
 
 export default function PrivacyPage() {
   return (
@@ -36,7 +36,11 @@ export default function PrivacyPage() {
       <h3>SMS messages</h3>
       <p>
         If you opt in to post-call SMS (for example, a follow-up plan or daily affirmation texts),
-        we collect your phone number and message delivery status through our SMS provider.
+        we collect your phone number and message delivery status through our SMS provider. Opt-in is
+        captured verbally at the start of your first call to UtalkWe Listen. See our{' '}
+        <Link href="/sms-disclosure">SMS Opt-In Disclosure</Link> for the full script, message
+        types, frequency, and opt-out details. Message and data rates may apply. Reply{' '}
+        <strong>STOP</strong> to any message to opt out, or <strong>HELP</strong> for help.
       </p>
       <h3>Payment information</h3>
       <p>
@@ -78,6 +82,16 @@ export default function PrivacyPage() {
         These providers are contractually required to use your data only to perform services for us.
         We may also disclose information if required by law, to protect rights and safety, or in
         connection with a business transfer (such as a merger), with notice where appropriate.
+      </p>
+      <p>
+        <strong>
+          The above excludes text messaging originator opt-in data and consent; this information
+          will not be shared with any third parties.
+        </strong>{' '}
+        We do not share or sell your mobile phone number, SMS opt-in data, or text messaging
+        originator consent with third parties or affiliates for marketing or promotional purposes.
+        Consent to receive SMS from UtalkWe Listen is a direct, one-to-one agreement between you
+        and us; it is not transferable, resaleable, or used to power third-party marketing.
       </p>
 
       <h2>4. Data retention</h2>
@@ -134,8 +148,9 @@ export default function PrivacyPage() {
         Questions about this Privacy Policy:{' '}
         <a href="mailto:privacy@utalwelisten.com">privacy@utalwelisten.com</a>
         <br />
-        See also our <Link href="/terms">Terms of Service</Link> and{' '}
-        <Link href="/disclaimer">AI Disclaimer</Link>.
+        See also our <Link href="/terms">Terms of Service</Link>,{' '}
+        <Link href="/disclaimer">AI Disclaimer</Link>, and{' '}
+        <Link href="/sms-disclosure">SMS Opt-In Disclosure</Link>.
       </p>
     </LegalPageLayout>
   )

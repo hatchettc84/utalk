@@ -6,6 +6,7 @@ const LEGAL_LINKS = [
   { href: '/privacy', label: 'Privacy Policy' },
   { href: '/terms', label: 'Terms of Service' },
   { href: '/disclaimer', label: 'AI Disclaimer' },
+  { href: '/sms-disclosure', label: 'SMS Disclosure' },
 ] as const
 
 type LegalPageLayoutProps = {
