@@ -11,7 +11,7 @@ import {
 // CONFIGURATION — Replace with real values
 // ─────────────────────────────────────────
 const CONFIG = {
-  phone: process.env.NEXT_PUBLIC_PHONE_NUMBER ?? '1-202-980-3980',
+  phone: process.env.NEXT_PUBLIC_PHONE_NUMBER ?? '1-888-976-6602',
   // Quick Call ($0.99/min) — single Stripe Payment Link or default to first pack
   stripeQuickCall: process.env.NEXT_PUBLIC_STRIPE_LINK_QUICK_CALL ?? '#pricing',
   // Unlimited monthly subscription ($29.99/mo)
