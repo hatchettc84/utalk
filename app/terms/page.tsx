@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description: 'Terms and conditions for using the UtalkWe Listen Haven AI voice guidance service.',
 }
 
-const LAST_UPDATED = 'May 23, 2026'
+const LAST_UPDATED = 'June 2, 2026'
 
 export default function TermsPage() {
   return (
@@ -93,7 +93,26 @@ export default function TermsPage() {
         processing.
       </p>
 
-      <h2>8. Intellectual property</h2>
+      <h2>8. SMS messaging</h2>
+      <p>
+        By continuing your first call to UtalkWe Listen after Haven&apos;s verbal SMS opt-in
+        disclosure, you agree to receive text messages from us related to the Service — including
+        call follow-ups, purchase confirmations, service updates, and crisis-safety messages.{' '}
+        <strong>Message frequency varies. Message and data rates may apply.</strong> Reply{' '}
+        <strong>STOP</strong> to any message to opt out, or <strong>HELP</strong> for support. See
+        the <Link href="/sms-disclosure">SMS Opt-In Disclosure</Link> for the full script and
+        details.
+      </p>
+      <p>
+        We do not share or sell your mobile phone number, SMS opt-in data, or text messaging
+        originator consent with third parties or affiliates for marketing or promotional purposes.{' '}
+        <strong>
+          The above excludes text messaging originator opt-in data and consent; this information
+          will not be shared with any third parties.
+        </strong>
+      </p>
+
+      <h2>9. Intellectual property</h2>
       <p>
         The Service, including Haven&apos;s persona, website content, and branding, is owned by UtalkWe
         Listen or its licensors. You receive a limited, personal, non-transferable license to use the
@@ -101,7 +120,7 @@ export default function TermsPage() {
         without our written permission.
       </p>
 
-      <h2>9. Disclaimers</h2>
+      <h2>10. Disclaimers</h2>
       <p>
         THE SERVICE IS PROVIDED &quot;AS IS&quot; AND &quot;AS AVAILABLE&quot; WITHOUT WARRANTIES OF
         ANY KIND, WHETHER EXPRESS OR IMPLIED, INCLUDING IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS
@@ -109,7 +128,7 @@ export default function TermsPage() {
         UNINTERRUPTED, ERROR-FREE, OR MEET YOUR EXPECTATIONS.
       </p>
 
-      <h2>10. Limitation of liability</h2>
+      <h2>11. Limitation of liability</h2>
       <p>
         TO THE MAXIMUM EXTENT PERMITTED BY LAW, UTALKWE LISTEN AND ITS AFFILIATES, OFFICERS,
         EMPLOYEES, AND SUPPLIERS WILL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL,
@@ -123,33 +142,35 @@ export default function TermsPage() {
         to the fullest extent permitted by law.
       </p>
 
-      <h2>11. Indemnification</h2>
+      <h2>12. Indemnification</h2>
       <p>
         You agree to indemnify and hold harmless UtalkWe Listen from claims, damages, and expenses
         (including reasonable attorneys&apos; fees) arising from your misuse of the Service or violation
         of these Terms.
       </p>
 
-      <h2>12. Changes and termination</h2>
+      <h2>13. Changes and termination</h2>
       <p>
         We may modify these Terms or discontinue features with notice where practicable. We may
         suspend or terminate access for violation of these Terms or to protect the Service. Sections
         that by their nature should survive termination will survive.
       </p>
 
-      <h2>13. Governing law</h2>
+      <h2>14. Governing law</h2>
       <p>
         These Terms are governed by the laws of the United States and the State of Maryland, without
         regard to conflict-of-law principles. Disputes will be resolved in the state or federal courts
         located in Maryland, unless applicable law requires otherwise.
       </p>
 
-      <h2>14. Contact</h2>
+      <h2>15. Contact</h2>
       <p>
         Questions about these Terms:{' '}
         <a href="mailto:support@utalwelisten.com">support@utalwelisten.com</a>
         <br />
-        Related: <Link href="/privacy">Privacy Policy</Link> · <Link href="/disclaimer">AI Disclaimer</Link>
+        Related: <Link href="/privacy">Privacy Policy</Link> ·{' '}
+        <Link href="/disclaimer">AI Disclaimer</Link> ·{' '}
+        <Link href="/sms-disclosure">SMS Opt-In Disclosure</Link>
       </p>
     </LegalPageLayout>
   )
