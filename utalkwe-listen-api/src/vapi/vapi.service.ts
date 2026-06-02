@@ -14,6 +14,16 @@ import type {
 
 const HAVEN_AI_DISCLOSURE = "I'm Haven — an AI guidance service, not a licensed counselor.";
 
+// Verbal SMS opt-in disclosure for Twilio Toll-Free Verification (TCPA-compliant).
+// Spoken on a caller's FIRST call only. Captured in the Vapi call recording as the
+// auditable consent record. By continuing the call after this disclosure, the caller
+// is providing verbal consent to receive SMS from UtalkWe Listen.
+const HAVEN_SMS_DISCLOSURE =
+  "By continuing this call, you agree to receive text messages from UtalkWe Listen " +
+  "at this number — including a short follow-up after our call and occasional " +
+  "service updates. Message frequency varies. Message and data rates may apply. " +
+  "Text STOP at any time to opt out, or HELP for help.";
+
 const HAVEN_BASE_PERSONA = `You are Haven, an AI guidance service — not a licensed counselor or therapist.
 
 WHO YOU ARE:
@@ -226,7 +236,10 @@ export class VapiService {
     let firstMessage: string;
     if (isFirstCall || !caller.name) {
       // Brand new caller OR we have their number but never got a name
-      firstMessage = `Welcome to UtalkWe Listen. ${HAVEN_AI_DISCLOSURE} I'm here to listen. Before we get started — what's your name?`;
+      firstMessage =
+        `Welcome to UtalkWe Listen. ${HAVEN_AI_DISCLOSURE} ` +
+        `${HAVEN_SMS_DISCLOSURE} ` +
+        `I'm here to listen. Before we get started — what's your name?`;
     } else {
       // Returning caller — we know their name. Use exact phrasing.
       firstMessage = `Hi ${firstName}, it's good to hear from you again. Would you like to continue our conversation, or talk about something else?`;
@@ -958,7 +971,10 @@ export class VapiService {
     return {
       assistant: {
         name: 'Haven',
-        firstMessage: `Welcome to UtalkWe Listen. ${HAVEN_AI_DISCLOSURE} What's been on your mind?`,
+        firstMessage:
+          `Welcome to UtalkWe Listen. ${HAVEN_AI_DISCLOSURE} ` +
+          `${HAVEN_SMS_DISCLOSURE} ` +
+          `What's been on your mind?`,
         model: {
           provider: 'anthropic',
           model: 'claude-3-5-sonnet-20241022',
