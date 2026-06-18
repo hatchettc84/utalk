@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     title: 'UtalkWe Listen — You Talk. We Listen.',
     description: 'Haven remembers you. Call anytime. No app required.',
     type: 'website',
-    url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://utalwelisten.com',
+    url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://utalkwelisten.com',
   },
   twitter: {
     card: 'summary_large_image',
@@ -32,6 +32,33 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* Organization schema — helps reviewers (and search engines) verify business identity */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'Organization',
+              name: 'UtalkWe Listen',
+              url: 'https://utalkwelisten.com',
+              logo: 'https://utalkwelisten.com/icon.png',
+              description:
+                'Phone-based emotional support service powered by Haven, an AI voice companion.',
+              telephone: '+1-888-976-6602',
+              areaServed: 'US',
+              contactPoint: [
+                {
+                  '@type': 'ContactPoint',
+                  telephone: '+1-888-976-6602',
+                  contactType: 'customer support',
+                  availableLanguage: ['en'],
+                  areaServed: 'US',
+                },
+              ],
+              sameAs: [],
+            }),
+          }}
+        />
       </head>
       <body>{children}</body>
     </html>

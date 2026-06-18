@@ -15,7 +15,7 @@ export default function PrivacyPage() {
       <p>
         UtalkWe Listen (&quot;we,&quot; &quot;us,&quot; or &quot;our&quot;) operates the Haven AI voice guidance
         service available at{' '}
-        <a href="https://utalwelisten.com">utalwelisten.com</a> and by phone. This Privacy Policy
+        <a href="https://utalkwelisten.com">utalkwelisten.com</a> and by phone. This Privacy Policy
         explains what information we collect, how we use it, and the choices you have.
       </p>
 
@@ -118,7 +118,7 @@ export default function PrivacyPage() {
       </ul>
       <p>
         To make a privacy request, email{' '}
-        <a href="mailto:privacy@utalwelisten.com">privacy@utalwelisten.com</a>. We may need to verify
+        <a href="mailto:privacy@utalkwelisten.com">privacy@utalkwelisten.com</a>. We may need to verify
         your identity using the phone number associated with your account.
       </p>
 
@@ -146,7 +146,7 @@ export default function PrivacyPage() {
       <h2>10. Contact us</h2>
       <p>
         Questions about this Privacy Policy:{' '}
-        <a href="mailto:privacy@utalwelisten.com">privacy@utalwelisten.com</a>
+        <a href="mailto:privacy@utalkwelisten.com">privacy@utalkwelisten.com</a>
         <br />
         See also our <Link href="/terms">Terms of Service</Link>,{' '}
         <Link href="/disclaimer">AI Disclaimer</Link>, and{' '}

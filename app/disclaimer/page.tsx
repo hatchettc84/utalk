@@ -99,7 +99,7 @@ export default function DisclaimerPage() {
         <br />
         Data practices: <Link href="/privacy">Privacy Policy</Link>
         <br />
-        Questions: <a href="mailto:support@utalwelisten.com">support@utalwelisten.com</a>
+        Questions: <a href="mailto:support@utalkwelisten.com">support@utalkwelisten.com</a>
       </p>
     </LegalPageLayout>
   )

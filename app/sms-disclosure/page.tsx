@@ -68,18 +68,38 @@ export default function SmsDisclosurePage() {
 
       <h2>3. Message frequency</h2>
       <p>
-        Approximately one message per call. Typical callers receive 1–3 SMS per week. We do not
-        send marketing blasts, bulk sends, or scheduled drip campaigns.
+        Approximately one message per call. A typical active caller receives between 4 and 12 SMS
+        per month. We do not send marketing blasts, bulk sends, or scheduled drip campaigns.
       </p>
 
-      <h2>4. How to opt out and get help</h2>
+      <h2>4. Sample messages</h2>
+      <p>Every SMS from UtalkWe Listen identifies the sender by name. Examples:</p>
+      <ul>
+        <li>
+          <strong>Post-call follow-up:</strong> &ldquo;Hey Mike, this is Haven from UtalkWe
+          Listen. Thank you for calling today. It takes courage to reach out, and what you shared
+          matters. I&apos;m here whenever you need to talk. Take care of yourself today. —
+          Haven&rdquo;
+        </li>
+        <li>
+          <strong>Purchase confirmation:</strong> &ldquo;Hey Mike — this is Haven. Got your
+          30-minute pack. You now have 30 minutes. Call anytime — I&apos;m here.&rdquo;
+        </li>
+        <li>
+          <strong>Crisis safety:</strong> &ldquo;If you are in crisis, please call or text 988 —
+          the Suicide and Crisis Lifeline. You don&apos;t have to go through this alone. —
+          Haven&rdquo;
+        </li>
+      </ul>
+
+      <h2>5. How to opt out and get help</h2>
       <p>
         Reply <strong>STOP</strong> (or STOPALL, UNSUBSCRIBE, CANCEL, END, QUIT) to any message and
         we will stop texting you immediately. Reply <strong>HELP</strong> for support information.
         Message and data rates may apply.
       </p>
 
-      <h2>5. Data sharing — SMS consent</h2>
+      <h2>6. Data sharing — SMS consent</h2>
       <p>
         We do not share or sell mobile phone numbers, SMS opt-in data, or text messaging originator
         consent with third parties or affiliates for marketing or promotional purposes. Mobile
@@ -94,11 +114,11 @@ export default function SmsDisclosurePage() {
         </strong>
       </p>
 
-      <h2>6. More information</h2>
+      <h2>7. More information</h2>
       <p>
         See our <Link href="/privacy">Privacy Policy</Link> and{' '}
         <Link href="/terms">Terms of Service</Link> for full details. Questions:{' '}
-        <a href="mailto:support@utalwelisten.com">support@utalwelisten.com</a>.
+        <a href="mailto:support@utalkwelisten.com">support@utalkwelisten.com</a>.
       </p>
     </LegalPageLayout>
   )
