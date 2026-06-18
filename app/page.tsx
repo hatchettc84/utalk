@@ -16,10 +16,6 @@ const CONFIG = {
   stripeQuickCall: process.env.NEXT_PUBLIC_STRIPE_LINK_QUICK_CALL ?? '#pricing',
   // Unlimited monthly subscription ($29.99/mo)
   stripeUnlimited: process.env.NEXT_PUBLIC_STRIPE_LINK_UNLIMITED ?? '#pricing',
-  // Legacy aliases (kept so older deploys with old env vars still work)
-  stripeBasic:   process.env.NEXT_PUBLIC_STRIPE_LINK_BASIC   ?? '#pricing',
-  stripePremium: process.env.NEXT_PUBLIC_STRIPE_LINK_PREMIUM ?? '#pricing',
-  stripeVip:     process.env.NEXT_PUBLIC_STRIPE_LINK_VIP     ?? '#pricing',
 }
 
 // ─────────────────────────────────────────
@@ -545,9 +541,10 @@ function Pricing() {
       badge: 'Most Popular',
       cta: { label: 'Buy a Quick Call', href: CONFIG.stripeQuickCall, style: 'bg-haven-gold text-haven-void hover:bg-haven-amber' },
       features: [
-        'Pay-as-you-go pricing',
+        '10-minute starter pack available',
+        'Pay-as-you-go at $0.99/min',
         'No subscription required',
-        'Minutes never expire',
+        'More minute packs available by text',
         'Full Haven experience',
         'Faith/general guidance',
         'Memory across calls',
@@ -585,7 +582,7 @@ function Pricing() {
             Start Free. Stay When It Helps.
           </h2>
           <p className="text-haven-mist text-xl max-w-2xl mx-auto">
-            The first call is free. So is the second and third. When Haven earns your trust, upgrading takes 60 seconds.
+            Your first 10 minutes are free. When Haven earns your trust, quick-call minutes or unlimited access take 60 seconds.
           </p>
         </div>
 
@@ -902,7 +899,7 @@ function FinalCTA() {
         </h2>
 
         <p className="text-haven-mist text-xl max-w-2xl mx-auto leading-relaxed mb-12">
-          Haven is here. The call takes 3 seconds to start and costs nothing.
+          Haven is here. The call takes 3 seconds to start, and your first 10 minutes are free.
           The first time Haven says your name back to you, you'll understand why people keep calling.
         </p>
 
