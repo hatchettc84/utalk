@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import {
   Phone, CheckCircle, Star, ChevronDown,
   Heart, Shield, Clock, Mic, Sparkles, BookOpen,
-  ArrowRight, Menu, X, Quote
+  ArrowRight, Menu, X, Quote, MessageSquare
 } from 'lucide-react'
 
 // ─────────────────────────────────────────
@@ -53,6 +53,7 @@ function Nav() {
     { href: '#haven',        label: 'Meet Haven'   },
     { href: '#wisdom',       label: 'Our Wisdom'   },
     { href: '#pricing',      label: 'Pricing'      },
+    { href: '#sms-consent',  label: 'SMS Consent'  },
     { href: '#faq',          label: 'FAQ'          },
   ]
 
@@ -712,6 +713,96 @@ function Testimonials() {
 }
 
 // ─────────────────────────────────────────
+// SMS CONSENT
+// ─────────────────────────────────────────
+function SMSConsent() {
+  return (
+    <section id="sms-consent" className="py-28 px-6 relative overflow-hidden">
+      <div className="absolute inset-0 bg-haven-void" />
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-haven-gold/20 to-transparent" />
+
+      <div className="max-w-5xl mx-auto relative z-10 grid grid-cols-1 lg:grid-cols-[0.9fr_1.1fr] gap-12 items-start">
+        <div>
+          <p className="text-haven-gold text-sm uppercase tracking-widest mb-4 font-mono">SMS Consent</p>
+          <h2 className="font-display text-4xl md:text-5xl text-haven-cream font-light leading-tight mb-6">
+            Texts only when you ask for them.
+          </h2>
+          <p className="text-haven-mist text-lg leading-relaxed mb-6">
+            UtalkWe Listen may send follow-up texts, coaching plan links, daily affirmations, billing
+            links, or service updates only after you opt in during a call, through checkout, or through
+            this consent form.
+          </p>
+          <div className="space-y-4 text-haven-sage text-sm leading-relaxed">
+            <p>
+              Message frequency varies based on your choices. Daily affirmations are one text per day.
+              Post-call follow-ups are normally one text after a call.
+            </p>
+            <p>
+              Message and data rates may apply. Reply <span className="text-haven-cream font-semibold">STOP</span> to
+              opt out, or <span className="text-haven-cream font-semibold">HELP</span> for help. Consent is not a
+              condition of purchase.
+            </p>
+            <p>
+              We do not sell or share SMS opt-in data with third parties for their marketing.
+            </p>
+          </div>
+        </div>
+
+        <form
+          action={`sms:${CONFIG.phone.replace(/-/g, '')}`}
+          className="card-glass rounded-3xl p-7 border border-haven-gold/20"
+        >
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-full bg-haven-green border border-haven-gold/40 flex items-center justify-center">
+              <MessageSquare size={18} className="text-haven-gold" />
+            </div>
+            <div>
+              <h3 className="font-display text-haven-cream text-2xl font-light">SMS Opt-In Form</h3>
+              <p className="text-haven-sage text-sm">For Haven updates and follow-up messages</p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <label className="block">
+              <span className="text-haven-mist text-sm">Mobile phone number</span>
+              <input
+                type="tel"
+                name="phone"
+                placeholder="+1 (___) ___-____"
+                className="mt-2 w-full rounded-xl border border-haven-sage/20 bg-haven-void/60 px-4 py-3 text-haven-cream placeholder:text-haven-sage/60 outline-none focus:border-haven-gold/60"
+              />
+            </label>
+
+            <label className="flex gap-3 rounded-2xl border border-haven-sage/15 bg-haven-deep/40 p-4">
+              <input type="checkbox" required className="mt-1 h-4 w-4 accent-haven-gold" />
+              <span className="text-haven-mist text-sm leading-relaxed">
+                I agree to receive recurring automated and non-automated SMS messages from UtalkWe
+                Listen at the phone number I provide, including follow-up messages, coaching plan
+                links, daily affirmations, billing links, and service updates. Message frequency
+                varies. Msg & data rates may apply. Reply STOP to cancel, HELP for help. Consent is
+                not a condition of purchase.
+              </span>
+            </label>
+
+            <p className="text-haven-sage text-xs leading-relaxed">
+              By opting in, you agree to our <a href="/terms" className="text-haven-gold hover:text-haven-amber">Terms</a> and{' '}
+              <a href="/privacy" className="text-haven-gold hover:text-haven-amber">Privacy Policy</a>.
+            </p>
+
+            <button
+              type="submit"
+              className="w-full rounded-xl bg-haven-gold px-5 py-3 font-semibold text-haven-void transition-all hover:bg-haven-amber"
+            >
+              Text Haven to Opt In
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+  )
+}
+
+// ─────────────────────────────────────────
 // FAQ
 // ─────────────────────────────────────────
 function FAQ() {
@@ -872,7 +963,7 @@ function Footer() {
           <div>
             <p className="text-haven-cream font-medium mb-4 uppercase text-xs tracking-widest">Navigate</p>
             <ul className="space-y-3 text-haven-sage text-sm">
-              {['How It Works', 'Meet Haven', 'Our Wisdom', 'Pricing', 'FAQ'].map(l => (
+              {['How It Works', 'Meet Haven', 'Our Wisdom', 'Pricing', 'SMS Consent', 'FAQ'].map(l => (
                 <li key={l}>
                   <a href={`#${l.toLowerCase().replace(/\s+/g, '-')}`} className="hover:text-haven-cream transition-colors">{l}</a>
                 </li>
@@ -884,9 +975,9 @@ function Footer() {
             <p className="text-haven-cream font-medium mb-4 uppercase text-xs tracking-widest">Plans</p>
             <ul className="space-y-3 text-haven-sage text-sm">
               <li><a href={`tel:${CONFIG.phone.replace(/-/g,'')}`} className="hover:text-haven-cream transition-colors">Free — Call Now</a></li>
-              <li><a href={CONFIG.stripeBasic} className="hover:text-haven-cream transition-colors">Basic — $19.99/mo</a></li>
-              <li><a href={CONFIG.stripePremium} className="hover:text-haven-cream transition-colors">Premium — $39.99/mo</a></li>
-              <li><a href={CONFIG.stripeVip} className="hover:text-haven-cream transition-colors">VIP — $99/mo</a></li>
+              <li><a href={CONFIG.stripeQuickCall} className="hover:text-haven-cream transition-colors">Quick Call — $0.99/min</a></li>
+              <li><a href={CONFIG.stripeUnlimited} className="hover:text-haven-cream transition-colors">Unlimited — $29.99/mo</a></li>
+              <li><a href="#sms-consent" className="hover:text-haven-cream transition-colors">SMS Consent</a></li>
             </ul>
           </div>
         </div>
@@ -943,6 +1034,7 @@ export default function Home() {
       <MeetHaven />
       <WisdomSection />
       <Pricing />
+      <SMSConsent />
       <Testimonials />
       <FAQ />
       <FinalCTA />

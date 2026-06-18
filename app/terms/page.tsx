@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description: 'Terms and conditions for using the UtalkWe Listen Haven AI voice guidance service.',
 }
 
-const LAST_UPDATED = 'June 2, 2026'
+const LAST_UPDATED = 'June 18, 2026'
 
 export default function TermsPage() {
   return (
@@ -95,13 +95,14 @@ export default function TermsPage() {
 
       <h2>8. SMS messaging</h2>
       <p>
-        By continuing your first call to UtalkWe Listen after Haven&apos;s verbal SMS opt-in
-        disclosure, you agree to receive text messages from us related to the Service — including
-        call follow-ups, purchase confirmations, service updates, and crisis-safety messages.{' '}
+        If you opt in to SMS from UtalkWe Listen verbally during a call, during checkout, or through
+        the SMS consent form on our website, you agree to receive text messages from us related to
+        the Service — including call follow-ups, coaching plan links, daily affirmations, billing
+        links, purchase confirmations, service updates, and crisis-safety messages.{' '}
         <strong>Message frequency varies. Message and data rates may apply.</strong> Reply{' '}
         <strong>STOP</strong> to any message to opt out, or <strong>HELP</strong> for support. See
         the <Link href="/sms-disclosure">SMS Opt-In Disclosure</Link> for the full script and
-        details.
+        details. Consent to SMS is not a condition of purchase.
       </p>
       <p>
         We do not share or sell your mobile phone number, SMS opt-in data, or text messaging

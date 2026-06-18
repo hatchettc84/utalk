@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description: 'How UtalkWe Listen collects, uses, and protects your information when you use Haven.',
 }
 
-const LAST_UPDATED = 'June 2, 2026'
+const LAST_UPDATED = 'June 18, 2026'
 
 export default function PrivacyPage() {
   return (
@@ -35,12 +35,12 @@ export default function PrivacyPage() {
       </p>
       <h3>SMS messages</h3>
       <p>
-        If you opt in to post-call SMS (for example, a follow-up plan or daily affirmation texts),
-        we collect your phone number and message delivery status through our SMS provider. Opt-in is
-        captured verbally at the start of your first call to UtalkWe Listen. See our{' '}
-        <Link href="/sms-disclosure">SMS Opt-In Disclosure</Link> for the full script, message
-        types, frequency, and opt-out details. Message and data rates may apply. Reply{' '}
-        <strong>STOP</strong> to any message to opt out, or <strong>HELP</strong> for help.
+        If you opt in to SMS (for example, post-call follow-ups, coaching plan links, daily
+        affirmation texts, billing links, or service updates), we collect your phone number,
+        consent status, message content, and message delivery status through our SMS provider.
+        You may opt in verbally during a call, during checkout, or through the SMS consent form on
+        our website. See our <Link href="/sms-disclosure">SMS Opt-In Disclosure</Link> for the
+        full script, message types, frequency, and opt-out details.
       </p>
       <h3>Payment information</h3>
       <p>
@@ -67,7 +67,20 @@ export default function PrivacyPage() {
         <li>Comply with legal obligations</li>
       </ul>
 
-      <h2>3. How we share information</h2>
+      <h2>3. SMS consent and mobile data</h2>
+      <p>
+        SMS consent is optional. By opting in, you agree to receive recurring automated and
+        non-automated text messages from UtalkWe Listen at the number you provide. Message frequency
+        varies based on the services you choose. Daily affirmations are usually one text per day;
+        post-call follow-ups are normally one message after a call. Message and data rates may apply.
+      </p>
+      <p>
+        Reply <strong>STOP</strong> to opt out of SMS or <strong>HELP</strong> for help. Consent is
+        not a condition of purchase. We do not sell or share SMS opt-in data with third parties for
+        their marketing.
+      </p>
+
+      <h2>4. How we share information</h2>
       <p>
         We do not sell your personal information. We share data only with service providers that help
         us run UtalkWe Listen, including:
@@ -94,21 +107,21 @@ export default function PrivacyPage() {
         and us; it is not transferable, resaleable, or used to power third-party marketing.
       </p>
 
-      <h2>4. Data retention</h2>
+      <h2>5. Data retention</h2>
       <p>
         We retain caller profiles and session summaries for as long as needed to provide the service
         and honor your history with Haven, unless you request deletion or we are required to delete
         data sooner. Billing records may be retained as required for tax and accounting purposes.
       </p>
 
-      <h2>5. Security</h2>
+      <h2>6. Security</h2>
       <p>
         We use administrative, technical, and organizational measures designed to protect your
         information, including encryption in transit and access controls on our systems. No method of
         transmission or storage is completely secure; we cannot guarantee absolute security.
       </p>
 
-      <h2>6. Your choices and rights</h2>
+      <h2>7. Your choices and rights</h2>
       <p>Depending on where you live, you may have the right to:</p>
       <ul>
         <li>Request access to personal information we hold about you</li>
@@ -122,28 +135,28 @@ export default function PrivacyPage() {
         your identity using the phone number associated with your account.
       </p>
 
-      <h2>7. Children</h2>
+      <h2>8. Children</h2>
       <p>
         UtalkWe Listen is not directed to children under 13, and we do not knowingly collect personal
         information from children under 13. If you believe a child has provided us information,
         contact us and we will delete it.
       </p>
 
-      <h2>8. U.S. service only</h2>
+      <h2>9. U.S. service only</h2>
       <p>
         The service is currently offered to callers in the United States. If you access the service
         from outside the U.S., your information may be processed in the United States where our
         providers operate.
       </p>
 
-      <h2>9. Changes to this policy</h2>
+      <h2>10. Changes to this policy</h2>
       <p>
         We may update this Privacy Policy from time to time. We will post the revised version on this
         page with an updated &quot;Last updated&quot; date. Continued use of the service after changes
         constitutes acceptance of the updated policy.
       </p>
 
-      <h2>10. Contact us</h2>
+      <h2>11. Contact us</h2>
       <p>
         Questions about this Privacy Policy:{' '}
         <a href="mailto:privacy@utalkwelisten.com">privacy@utalkwelisten.com</a>
