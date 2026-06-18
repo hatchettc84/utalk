@@ -133,32 +133,53 @@ export class SmsService {
     return (count ?? 0) > 0;
   }
 
+  /**
+   * Raw Twilio send — no consent gate, no DB log. Use for admin/test endpoints
+   * and as the transport for sendWithLogging.
+   */
+  async sendRaw(
+    to: string,
+    body: string,
+  ): Promise<{ sid: string | null; errorCode: string | null; errorMessage: string | null }> {
+    try {
+      const msg = await this.client.messages.create({ body, from: this.fromNumber, to });
+      return { sid: msg.sid, errorCode: null, errorMessage: null };
+    } catch (err) {
+      const e = err as { code?: number | string; status?: number; message?: string; moreInfo?: string };
+      const errorCode = e.code != null ? String(e.code) : null;
+      const errorMessage = e.message ?? String(err);
+      this.logger.error(
+        `Twilio send failed to ${this.maskPhone(to)} ` +
+        `code=${errorCode ?? 'NONE'} status=${e.status ?? 'NONE'} ` +
+        `moreInfo=${e.moreInfo ?? 'NONE'} message="${errorMessage}"`,
+      );
+      return { sid: null, errorCode, errorMessage };
+    }
+  }
+
   private async sendWithLogging(
     callerId: string,
     phone: string,
     body: string,
     messageType: SmsMessageType,
   ): Promise<void> {
-    let twilioSid: string | null = null;
+    const { sid, errorCode, errorMessage } = await this.sendRaw(phone, body);
 
-    try {
-      const msg = await this.client.messages.create({ body, from: this.fromNumber, to: phone });
-      twilioSid = msg.sid;
-      this.logger.log(`SMS sent to ${this.maskPhone(phone)} [${messageType}] sid=${msg.sid}`);
-    } catch (err) {
-      this.logger.error(`Twilio send failed to ${this.maskPhone(phone)}`, err);
+    if (sid) {
+      this.logger.log(`SMS sent to ${this.maskPhone(phone)} [${messageType}] sid=${sid}`);
     }
 
-    const status: 'sent' | 'failed' = twilioSid === null ? 'failed' : 'sent';
+    const status: 'sent' | 'failed' = sid === null ? 'failed' : 'sent';
 
-    // Log to sms_log regardless of Twilio result
     const { error: logErr } = await this.supabase.from('sms_log').insert({
       caller_id: callerId,
       phone,
       message_type: messageType,
       body,
-      twilio_sid: twilioSid,
+      twilio_sid: sid,
       status,
+      error_code: errorCode,
+      error_message: errorMessage,
     });
     if (logErr) this.logger.error('Failed to write sms_log entry', logErr);
   }
