@@ -166,7 +166,7 @@ export default function TermsPage() {
       <h2>15. Contact</h2>
       <p>
         Questions about these Terms:{' '}
-        <a href="mailto:support@utalwelisten.com">support@utalwelisten.com</a>
+        <a href="mailto:support@utalkwelisten.com">support@utalkwelisten.com</a>
         <br />
         Related: <Link href="/privacy">Privacy Policy</Link> ·{' '}
         <Link href="/disclaimer">AI Disclaimer</Link> ·{' '}

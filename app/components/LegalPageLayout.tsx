@@ -47,8 +47,8 @@ export function LegalPageLayout({ title, lastUpdated, children }: LegalPageLayou
 
         <p className="mt-10 text-haven-sage text-sm text-center max-w-2xl mx-auto">
           These documents are provided for transparency. They are not legal advice. For questions, contact{' '}
-          <a href="mailto:support@utalwelisten.com" className="text-haven-gold hover:text-haven-amber transition-colors">
-            support@utalwelisten.com
+          <a href="mailto:support@utalkwelisten.com" className="text-haven-gold hover:text-haven-amber transition-colors">
+            support@utalkwelisten.com
           </a>
           .
         </p>

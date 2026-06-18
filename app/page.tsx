@@ -200,6 +200,22 @@ function Hero() {
             <span className="flex items-center gap-2"><CheckCircle size={14} className="text-haven-gold" /> No credit card</span>
             <span className="flex items-center gap-2"><CheckCircle size={14} className="text-haven-gold" /> Faith-optional</span>
           </div>
+
+          {/* SMS opt-in micro-disclosure — required by Twilio TFV / TCPA */}
+          <p className="text-haven-sage text-xs max-w-xl text-center leading-relaxed mt-4 px-4">
+            By calling, you agree to receive SMS from UtalkWe Listen (call follow-ups,
+            purchase confirmations, and service notices). Message frequency varies; typically
+            1–3 per week. Message and data rates may apply. Reply <strong>STOP</strong> to opt
+            out, <strong>HELP</strong> for help. See our{' '}
+            <a href="/sms-disclosure" className="text-haven-mist underline hover:text-haven-cream">
+              SMS Disclosure
+            </a>{' '}
+            and{' '}
+            <a href="/privacy" className="text-haven-mist underline hover:text-haven-cream">
+              Privacy Policy
+            </a>
+            .
+          </p>
         </div>
       </div>
 
@@ -882,6 +898,7 @@ function Footer() {
             <a href="/privacy" className="hover:text-haven-cream transition-colors">Privacy Policy</a>
             <a href="/terms" className="hover:text-haven-cream transition-colors">Terms of Service</a>
             <a href="/disclaimer" className="hover:text-haven-cream transition-colors">AI Disclaimer</a>
+            <a href="/sms-disclosure" className="hover:text-haven-cream transition-colors">SMS Disclosure</a>
           </div>
           <div className="text-center">
             <p>UtalkWe Listen is an AI guidance service and not a licensed counselor or therapist.</p>
